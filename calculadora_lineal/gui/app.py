@@ -69,6 +69,8 @@ class AlgebraApp(tk.Tk):
             self.show_home()
         elif name == "Matrices":
             self.show_matrices()
+        elif name == "Vectores":
+            self.show_vectores()
         else:
             self.show_placeholder(name)
 
@@ -95,26 +97,19 @@ class AlgebraApp(tk.Tk):
         sub.pack()
 
     def show_matrices(self):
-        frame = tk.Frame(self.container, bg=COLORS["bg"])
-        frame.pack(expand=True, fill="both")
-
-        lbl = tk.Label(
-            frame,
-            text="Operaciones con Matrices",
-            font=FONTS["title"],
-            fg=COLORS["text"],
-            bg=COLORS["bg"],
-        )
-        lbl.pack(pady=20)
-
-        sub = tk.Label(
-            frame,
-            text="Aquí irá el ingreso dinámico de matrices",
-            font=FONTS["normal"],
-            fg=COLORS["accent"],
-            bg=COLORS["bg"],
-        )
-        sub.pack()
+        # Limpiar contenido
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .matrices_view import MatricesView
+        frame = MatricesView(self.container)
+        frame.pack(fill="both", expand=True)
+    
+    def show_vectores(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .vectores_view import VectoresView
+        frame = VectoresView(self.container)
+        frame.pack(fill="both", expand=True)
 
     def show_placeholder(self, name):
         frame = tk.Frame(self.container, bg=COLORS["bg"])
