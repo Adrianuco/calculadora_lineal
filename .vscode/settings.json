@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./"
+    ],
+    "python.defaultInterpreterPath": "python3",
+    "python.terminal.activateEnvironment": true
+}
