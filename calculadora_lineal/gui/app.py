@@ -1,7 +1,14 @@
 # algebra_lineal/gui/app.py
+import os
 import tkinter as tk
 from tkinter import ttk
 from .theme import COLORS, FONTS
+from PIL import Image, ImageTk 
+
+# Importamos los menús principales de matrices y vectores
+from .views.matrix_menu import MatrixMenu
+from .views.vector_menu import VectorMenu
+from .matrices_view import MatricesView
 
 class AlgebraApp(tk.Tk):
     def __init__(self):
@@ -35,22 +42,85 @@ class AlgebraApp(tk.Tk):
         # Pantalla inicial
         self.show_screen("Inicio")
 
+    from PIL import Image, ImageTk
     def create_sidebar(self):
-        for name in self.menu_items.keys():
-            btn = tk.Button(
-                self.sidebar,
-                text=name,
-                font=FONTS["subtitle"],
-                fg=COLORS["text"],
-                bg=COLORS["sidebar"],
-                bd=0,
-                relief="flat",
-                activebackground=COLORS["sidebar_active"],
-                activeforeground=COLORS["text"],
-                command=lambda n=name: self.show_screen(n)
-            )
-            btn.pack(fill="x", pady=2)
-            self.menu_items[name] = btn
+        ICON_SIZE = (36, 36)
+        LABEL_HEIGHT = 80
+        SIDEBAR_WIDTH = 100  # ancho fijo de la sidebar
+
+        def load_icon(path, fallback_emoji):
+            try:
+                img = Image.open(path).convert("RGBA").resize(ICON_SIZE, Image.LANCZOS)
+                return ImageTk.PhotoImage(img)
+            except Exception:
+                return None
+
+        current_dir = os.path.dirname(__file__)
+
+        menu_def = [
+            ("Inicio", os.path.join(current_dir, "assets/icons/home.png"), "🏠"),
+            ("Matrices", os.path.join(current_dir, "assets/icons/matrix.png"), "🧮"),
+            ("Vectores", os.path.join(current_dir, "assets/icons/vectors.png"), "🧭"),
+            ("Análisis Numérico", os.path.join(current_dir, "assets/icons/analysis.png"), "📊"),
+            ("Ajustes", os.path.join(current_dir, "assets/icons/settings.png"), "⚙️"),
+            ("Ayuda", os.path.join(current_dir, "assets/icons/help.png"), "❔"),
+        ]
+
+        # Limpiamos sidebar si había algo antes
+        for widget in self.sidebar.winfo_children():
+            widget.destroy()
+
+        self.menu_items = {}
+        self.sidebar_icons = {}  # mantener referencia de imágenes
+
+        for name, icon_path, emoji in menu_def:
+            lbl_frame = tk.Frame(self.sidebar, bg=COLORS["sidebar"], width=SIDEBAR_WIDTH, height=LABEL_HEIGHT)
+            lbl_frame.pack_propagate(False)  # evitar que el frame cambie de tamaño
+            lbl_frame.pack(fill="x", pady=2)
+
+            icon_img = load_icon(icon_path, emoji)
+            if icon_img:
+                lbl = tk.Label(
+                    lbl_frame,
+                    image=icon_img,
+                    text=name,
+                    compound="top",
+                    font=FONTS["normal"],
+                    fg=COLORS["text"],
+                    bg=COLORS["sidebar"],
+                    width=SIDEBAR_WIDTH,
+                    height=LABEL_HEIGHT,
+                    anchor="n"
+                )
+                self.sidebar_icons[name] = icon_img
+            else:
+                lbl = tk.Label(
+                    lbl_frame,
+                    text=f"{emoji}\n{name}",
+                    font=FONTS["icon"],
+                    fg=COLORS["text"],
+                    bg=COLORS["sidebar"],
+                    width=SIDEBAR_WIDTH,
+                    height=LABEL_HEIGHT,
+                    anchor="n"
+                )
+
+            lbl.pack(expand=True, fill="both")
+
+            # Hover
+            lbl.bind("<Enter>", lambda e, l=lbl: l.configure(bg=COLORS["sidebar_btn"]))
+            lbl.bind("<Leave>", lambda e, l=lbl: l.configure(bg=COLORS["sidebar"]))
+
+            # Click: cambiar pantalla y marcar activo
+            def on_click(event, n=name, l=lbl):
+                self.show_screen(n)
+                for b in self.menu_items.values():
+                    b.configure(bg=COLORS["sidebar"])
+                l.configure(bg=COLORS["sidebar_active"])
+
+            lbl.bind("<Button-1>", on_click)
+
+            self.menu_items[name] = lbl
 
     def show_screen(self, name):
         # Reset colores de todos los botones
@@ -100,16 +170,44 @@ class AlgebraApp(tk.Tk):
         # Limpiar contenido
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .matrices_view import MatricesView
-        frame = MatricesView(self.container)
+        frame = MatrixMenu(self.container, self)
         frame.pack(fill="both", expand=True)
+    
+    def show_matrices_view(self):
+        # limpia el contenedor
+        for widget in self.container.winfo_children():
+            widget.destroy()
+
+        # carga la pantalla de Gauss-Jordan
+        frame = MatricesView(self.container)
+        frame.pack(expand=True, fill="both")
     
     def show_vectores(self):
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .vectores_view import VectoresView
-        frame = VectoresView(self.container)
+        frame = VectorMenu(self.container, self) 
         frame.pack(fill="both", expand=True)
+        
+    def show_vector_operations(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.vector_operations import VectorOperations
+        frame = VectorOperations(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_vector_linear_comb(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.vector_linear_comb import VectorLinearComb
+        frame = VectorLinearComb(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_vector_equations(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.vector_equations import VectorEquations
+        frame = VectorEquations(self.container, self)
+        frame.pack(expand=True, fill="both")
 
     def show_placeholder(self, name):
         frame = tk.Frame(self.container, bg=COLORS["bg"])
@@ -123,7 +221,6 @@ class AlgebraApp(tk.Tk):
             bg=COLORS["bg"],
         )
         lbl.pack(pady=20)
-
 
 if __name__ == "__main__":
     app = AlgebraApp()

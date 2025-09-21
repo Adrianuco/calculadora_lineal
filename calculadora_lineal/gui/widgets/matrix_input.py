@@ -5,12 +5,6 @@ from fractions import Fraction
 from ...metodos.gauss_jordan import to_fraction
 
 class MatrixInput(tk.Frame):
-    """
-    Widget que crea una cuadrícula de Entry dinámica.
-    Uso:
-      mi = MatrixInput(parent, rows=3, cols=3, include_rhs=True, col_headers=["x1","x2","b"])
-      mi.get_matrix() -> devuelve lista de listas con STRINGS (o Fraction si parse=True)
-    """
     def __init__(self, master, rows, cols, include_rhs=True, col_headers=None, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.rows = rows
@@ -57,7 +51,7 @@ class MatrixInput(tk.Frame):
                     fila.append(val)
             A.append(fila)
         return A
-
+    
     def clear(self):
         for row in self.entries:
             for e in row:

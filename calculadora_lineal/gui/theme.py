@@ -1,15 +1,22 @@
-
-
+# calculadora_lineal/gui/theme.py
 COLORS = {
-    "bg": "#0D1B2A",          # fondo principal oscuro
-    "sidebar": "#0F2545",     # azul marino (sidebar)
-    "sidebar_active": "#5876A7",  # azul grisáceo para item activo
-    "text": "#EAF2FB",        # texto claro
-    "accent": "#D9A94E",      # dorado tenue
+    "bg": "#071427",           # fondo principal (oscuro)
+    "sidebar": "#0b1d3a",      # azul más oscuro para sidebar
+    "sidebar_btn": "#122a55",  # hover / botones sidebar
+    "sidebar_active": "#1a3a70",
+    "panel": "#0d2a44",
+    "card": "#0f3a5a",
+    "accent": "#2b8bd3",
+    "text": "#E6EEF3",
+    "muted": "#9BB0C9",
+    "danger": "#e06c75",
 }
 
+# Fuentes (fácil de cambiar si agregas .ttf)
 FONTS = {
-    "title": ("Segoe UI", 16, "bold"),
-    "subtitle": ("Segoe UI", 12, "bold"),
-    "normal": ("Segoe UI", 10),
+    "title": ("Helvetica", 18, "bold"),
+    "subtitle": ("Helvetica", 12, "bold"),
+    "normal": ("Helvetica", 11),
+    "mono": ("Courier New", 11),
+    "icon": ("Segoe UI Emoji", 20)  # para fallback con emoji
 }
