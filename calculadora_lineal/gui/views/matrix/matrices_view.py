@@ -1,9 +1,9 @@
 # calculadora_lineal/gui/matrices_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
-from .widgets.matrix_input import MatrixInput
-from .step_viewer import StepViewer
-from ..metodos.gauss_jordan import gauss_jordan, analyze_rref, pretty_frac, to_fraction
+from .matrix_input import MatrixInput
+from ...step_viewer import StepViewer
+from ....methods.matrix_mth.gauss_jordan import gauss_jordan, analyze_rref, pretty_frac, to_fraction
 
 class MatricesView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
@@ -11,7 +11,7 @@ class MatricesView(tk.Frame):
         self._build_ui()
 
     def _build_ui(self):
-        from .theme import COLORS, FONTS
+        from ...theme import COLORS, FONTS
 
         # Panel superior: controles de dimensión y método
         controls = tk.Frame(self, bg=COLORS["panel"])

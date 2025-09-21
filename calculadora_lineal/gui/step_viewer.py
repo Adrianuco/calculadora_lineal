@@ -1,7 +1,7 @@
 # calculadora_lineal/gui/step_viewer.py
 import tkinter as tk
 from tkinter import ttk
-from ..metodos.gauss_jordan import pretty_frac
+from ..methods.matrix_mth.gauss_jordan import pretty_frac
 
 class StepViewer(tk.Frame):
     """

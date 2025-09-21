@@ -1,6 +1,6 @@
 # calculadora_lineal/gui/views/matrix_menu.py
 import tkinter as tk
-from ..theme import COLORS, FONTS
+from ...theme import COLORS, FONTS
 
 class MatrixMenu(tk.Frame):
     def __init__(self, parent, controller):

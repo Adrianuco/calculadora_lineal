@@ -6,9 +6,9 @@ from .theme import COLORS, FONTS
 from PIL import Image, ImageTk 
 
 # Importamos los menús principales de matrices y vectores
-from .views.matrix_menu import MatrixMenu
-from .views.vector_menu import VectorMenu
-from .matrices_view import MatricesView
+from .views.matrix.matrix_menu import MatrixMenu
+from .views.vectors.vector_menu import VectorMenu
+from .views.matrix.matrices_view import MatricesView
 
 class AlgebraApp(tk.Tk):
     def __init__(self):
@@ -187,25 +187,25 @@ class AlgebraApp(tk.Tk):
             widget.destroy()
         frame = VectorMenu(self.container, self) 
         frame.pack(fill="both", expand=True)
-        
+
     def show_vector_operations(self):
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .views.vector_operations import VectorOperations
+        from .views.vectors.vector_operations import VectorOperations
         frame = VectorOperations(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_vector_linear_comb(self):
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .views.vector_linear_comb import VectorLinearComb
-        frame = VectorLinearComb(self.container, self)
+        from .views.vectors.vector_linear_comb import VectorsLinearComb
+        frame = VectorsLinearComb(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_vector_equations(self):
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .views.vector_equations import VectorEquations
+        from .views.vectors.vector_equations import VectorEquations
         frame = VectorEquations(self.container, self)
         frame.pack(expand=True, fill="both")
 

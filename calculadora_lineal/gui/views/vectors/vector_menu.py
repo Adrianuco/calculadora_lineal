@@ -1,5 +1,5 @@
 import tkinter as tk
-from ..theme import COLORS, FONTS
+from ...theme import COLORS, FONTS
 
 class VectorMenu(tk.Frame):
     def __init__(self, parent, controller):

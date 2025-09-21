@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from fractions import Fraction
-from ...metodos.gauss_jordan import to_fraction
+from ....methods.matrix_mth.gauss_jordan import to_fraction
 
 class MatrixInput(tk.Frame):
     def __init__(self, master, rows, cols, include_rhs=True, col_headers=None, *args, **kwargs):

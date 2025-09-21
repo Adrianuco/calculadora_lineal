@@ -1,9 +1,9 @@
 # calculadora_lineal/gui/vectores_view.py
 import tkinter as tk
 from tkinter import messagebox
-from .widgets.matrix_input import MatrixInput
-from .step_viewer import StepViewer
-from ..metodos.gauss_jordan import gauss_jordan, analyze_rref, pretty_frac
+from ..matrix.matrix_input import MatrixInput
+from ...step_viewer import StepViewer
+from ....methods.matrix_mth.gauss_jordan import gauss_jordan, analyze_rref, pretty_frac
 
 class VectoresView(tk.Frame):
     """
