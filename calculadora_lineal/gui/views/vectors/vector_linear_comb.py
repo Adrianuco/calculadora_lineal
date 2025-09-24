@@ -81,7 +81,10 @@ class VectorsLinearComb(tk.Frame):
         # Mostrar pasos
         self.step_viewer.clear()
         for paso in result.get("steps", []):
-            self.step_viewer.add_step(paso["desc"], paso["matrix"])
+            if paso.get("type") == "matrix":
+                self.step_viewer.add_step(paso["desc"], paso["matrix"])
+            else:  # texto plano
+                self.step_viewer.add_text(paso["desc"])
 
         # Mostrar conclusión
         conclusion = result.get("conclusion", "No se pudo determinar la combinación lineal.")
