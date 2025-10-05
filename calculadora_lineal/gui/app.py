@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 # Importamos los menús principales de matrices y vectores
 from .views.matrix.matrix_menu import MatrixMenu
 from .views.vectors.vector_menu import VectorMenu
-from .views.matrix.matrices_view import MatricesView
+from .views.matrix.matrices_view import MatricesView, MatrixMultiplyView
 
 class AlgebraApp(tk.Tk):
     def __init__(self):
@@ -180,6 +180,15 @@ class AlgebraApp(tk.Tk):
 
         # carga la pantalla de Gauss-Jordan
         frame = MatricesView(self.container)
+        frame.pack(expand=True, fill="both")
+
+    def show_matrix_multiplication_view(self):
+        # Limpiar el contenedor principal
+        for widget in self.container.winfo_children():
+            widget.destroy()
+
+        # Crear la vista de multiplicación de matrices
+        frame = MatrixMultiplyView(self.container, self)
         frame.pack(expand=True, fill="both")
     
     def show_vectores(self):
