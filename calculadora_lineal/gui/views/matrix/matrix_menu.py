@@ -26,3 +26,14 @@ class MatrixMenu(tk.Frame):
             command=lambda: self.controller.show_matrices_view()
         )
         btn_gauss.pack(pady=10, ipadx=10, ipady=5)
+
+        btn_solution = tk.Button(
+            self,
+            text="Conjunto Solución",
+            font=FONTS["normal"],
+            bg=COLORS["accent"],
+            fg="white",
+            relief="flat",
+            command=lambda: self.controller.show_solution_view()
+        )
+        btn_solution.pack(pady=10, ipadx=10, ipady=5)

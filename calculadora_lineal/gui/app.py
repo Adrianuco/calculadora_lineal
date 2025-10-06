@@ -222,6 +222,13 @@ class AlgebraApp(tk.Tk):
         )
         lbl.pack(pady=20)
 
+    def show_solution_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.matrix.solution_view import SolutionView
+        frame = SolutionView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
 if __name__ == "__main__":
     app = AlgebraApp()
     app.mainloop()

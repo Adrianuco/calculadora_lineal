@@ -1,6 +1,7 @@
 # calculadora_lineal/gui/theme.py
 COLORS = {
-    "bg": "#071427",           # fondo principal (oscuro)
+    "bg": "#071427", 
+    "fg": "#f0f0f0",          # fondo principal (oscuro)
     "sidebar": "#0b1d3a",      # azul más oscuro para sidebar
     "sidebar_btn": "#122a55",  # hover / botones sidebar
     "sidebar_active": "#1a3a70",
