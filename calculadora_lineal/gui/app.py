@@ -9,6 +9,7 @@ from PIL import Image, ImageTk
 from .views.matrix.matrix_menu import MatrixMenu
 from .views.vectors.vector_menu import VectorMenu
 from .views.matrix.matrices_view import MatricesView, MatrixMultiplyView
+from .views.vectors.dependency_view import DependenciaView
 
 class AlgebraApp(tk.Tk):
     def __init__(self):
@@ -216,6 +217,12 @@ class AlgebraApp(tk.Tk):
             widget.destroy()
         from .views.vectors.vector_equations import VectorEquations
         frame = VectorEquations(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_dependencia_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        frame = DependenciaView(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_placeholder(self, name):
