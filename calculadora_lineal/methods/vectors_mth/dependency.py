@@ -20,11 +20,11 @@ def check_vector_dependency(vectors):
     matriz = [list(col) for col in zip(*vectors)]
     vars_str = [chr(97 + i) for i in range(n)]  # a, b, c, d...
 
-    # --- Combinación general
+    # Combinación general
     comb = " + ".join(f"{vars_str[i]}v{i+1}" for i in range(n))
     pasos.append({"titulo": "Solución:", "desc": f"{comb} = 0"})
 
-    # --- Combinación con valores
+    # Combinación con valores
     combo_desc = " + ".join(
         f"{vars_str[i]}({', '.join(fmt(v) for v in vectors[i])})"
         for i in range(n)
@@ -32,14 +32,14 @@ def check_vector_dependency(vectors):
     zero_tuple = "(" + ", ".join(["0"]*m) + ")"
     pasos.append({"desc": f"Formamos la combinación lineal:\n{combo_desc} = {zero_tuple}"})
 
-    # --- Sistema de ecuaciones
+    # Sistema de ecuaciones
     eqs = []
     for i in range(m):
         ecu = " + ".join(f"{vars_str[j]}({fmt(vectors[j][i])})" for j in range(n))
         eqs.append(f"Ec. {i+1}: {ecu} = 0")
     pasos.append({"desc": "De aquí:\n" + "\n".join(eqs)})
 
-    # --- Gauss-Jordan
+    # Gauss-Jordan
     pasos.append({"titulo": "Resolución en Gauss-Jordan:"})
     A = matrix_to_fraction(matriz)
     A_ext = [row + [Fraction(0)] for row in A]
@@ -47,7 +47,6 @@ def check_vector_dependency(vectors):
 
     for step in gauss_steps:
         step_matrix = step.get("matriz", [])
-        # Garantizar solo Fractions
         step_matrix_frac = [
             [to_fraction(el) for el in row] for row in step_matrix
         ]
@@ -56,7 +55,11 @@ def check_vector_dependency(vectors):
             "matrix": step_matrix_frac
         })
 
-    # --- Conclusión
+    # Conjunto Solución
+    conjunto_solucion = ", ".join(f"{var} = 0" for var in vars_str)
+    pasos.append({"titulo": "Conjunto Solución:", "desc": conjunto_solucion})
+
+    # Conclusión
     rank = sum(any(el != 0 for el in row[:-1]) for row in A_rref)
     conclusion = "independientes" if rank == n else "dependientes"
 
@@ -158,7 +161,7 @@ def check_polynomial_dependency(polynomials):
     if n == 0:
         return [], "independientes"
 
-    # --- Convertir polinomios a coeficientes
+    # Convertir polinomios a coeficientes
     processed = []
     for p in polynomials:
         expr = p.replace(" ", "").replace("-", "+-")
@@ -189,15 +192,15 @@ def check_polynomial_dependency(polynomials):
         coeffs = [coef_dict.get(i, Fraction(0)) for i in range(max_exp, -1, -1)]
         processed.append(coeffs)
 
-    # --- Alinear longitudes
+    # Alinear longitudes
     max_len = max(len(p) for p in processed)
     for p in processed:
         p += [Fraction(0)] * (max_len - len(p))
 
-    # --- Formar matriz aumentada
+    # Formar matriz aumentada
     A = [[processed[j][i] for j in range(n)] + [Fraction(0)] for i in range(max_len)]
 
-    # --- Combinación lineal paso inicial
+    # Combinación lineal paso inicial
     vars_str = [chr(97 + i) for i in range(n)]
     comb = " + ".join(f"{vars_str[i]}(v{i+1})" for i in range(n))
     pasos.append({"titulo": "Solución:", "desc": f"{comb} = 0"})
@@ -206,7 +209,7 @@ def check_polynomial_dependency(polynomials):
     zero_tuple = "(" + ", ".join(["0"]*max_len) + ")"
     pasos.append({"desc": f"Formamos la combinación lineal:\n{combo_desc} = {zero_tuple}"})
 
-    # --- Gauss-Jordan
+    # Gauss-Jordan
     pasos.append({"titulo": "Resolución en Gauss-Jordan:"})
     A_rref, gauss_steps = gauss_jordan(A)
     for step in gauss_steps:
@@ -216,7 +219,7 @@ def check_polynomial_dependency(polynomials):
             "matrix": step_matrix
         })
 
-    # --- Construir solución general a partir de RREF
+    # Construir solución general a partir de RREF
     sol_general = []
     m = len(A_rref)
     for i, row in enumerate(A_rref):
@@ -228,12 +231,12 @@ def check_polynomial_dependency(polynomials):
         eq_str = " + ".join(eq_terms) + " = 0" if eq_terms else "0 = 0"
         sol_general.append(eq_str)
 
-    # --- Sustituir variables libres por 0 para solución trivial
+    # Sustituir variables libres por 0 para solución trivial
     final_sol = {v: Fraction(0) for v in vars_str}
     pasos.append({"titulo": "Solución General:", "desc": "\n".join(sol_general)})
     pasos.append({"desc": f"Solución trivial: {', '.join(f'{k} = {v}' for k,v in final_sol.items())}"})
 
-    # --- Conclusión de dependencia
+    # Conclusión de dependencia
     rank = sum(any(el != 0 for el in row[:-1]) for row in A_rref)
     conclusion = "independientes" if rank == n else "dependientes"
     pasos.append({"desc": f"Indica que los polinomios son linealmente {conclusion}."})
