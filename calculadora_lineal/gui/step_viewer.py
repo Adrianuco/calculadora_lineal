@@ -1,5 +1,6 @@
 import tkinter as tk
-from ..methods.matrix_mth.gauss_jordan import pretty_frac
+from calculadora_lineal.methods.matrix_mth.gauss_jordan import to_fraction, pretty_frac
+from fractions import Fraction
 
 class StepViewer(tk.Frame):
     """
@@ -49,3 +50,29 @@ class StepViewer(tk.Frame):
 
         lbl = tk.Label(card, text=text, font=("Segoe UI", 12, "bold"))
         lbl.pack(anchor="center")
+    
+    # Agregar dentro de la clase StepViewer, sin tocar nada más
+    def add_step_safe(self, descripcion, matriz):
+        """
+        Similar a add_step, pero maneja strings y números mixtos
+        sin lanzar error por pretty_frac.
+        """
+        card = tk.Frame(self.inner, bd=1, relief="groove", padx=6, pady=6)
+        card.grid(row=len(self.inner.winfo_children()), column=0, pady=6, sticky="n")
+
+        lbl = tk.Label(card, text=descripcion, font=("Segoe UI", 12, "bold"))
+        lbl.pack(anchor="center")
+
+        mat_frame = tk.Frame(card)
+        mat_frame.pack(anchor="center", pady=(4,2))
+
+        from ..methods.matrix_mth.gauss_jordan import to_fraction, pretty_frac
+        for i, fila in enumerate(matriz):
+            for j, val in enumerate(fila):
+                # solo aplicar pretty_frac si es número
+                if isinstance(val, (int, float, Fraction)):
+                    display_val = pretty_frac(to_fraction(val))
+                else:
+                    display_val = str(val)
+                lblv = tk.Label(mat_frame, text=display_val, font=("Segoe UI", 12), borderwidth=0, padx=6, pady=2)
+                lblv.grid(row=i, column=j, sticky="nsew")

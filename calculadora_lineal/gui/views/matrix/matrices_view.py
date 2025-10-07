@@ -1,9 +1,10 @@
 # calculadora_lineal/gui/matrices_view.py
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Frame, Label, Button
 from .matrix_input import MatrixInput
 from ...step_viewer import StepViewer
 from ....methods.matrix_mth.gauss_jordan import gauss_jordan, analyze_rref, pretty_frac, to_fraction
+from calculadora_lineal.methods.matrix_mth.multiplication import matrix_multiply, pretty_frac, handle_vector_warning, is_column_vector
 
 class MatricesView(tk.Frame):
     def __init__(self, master, *args, **kwargs):
@@ -246,4 +247,181 @@ class MatricesView(tk.Frame):
             # en caso de que pretty_frac falle por algún tipo inesperado, proteger
             self.txt_conclusions.insert(tk.END, "(No se pudo mostrar preview de matriz)\n")
 
+        self.txt_conclusions.configure(state="disabled")
+
+import tkinter as tk
+from .matrix_input import MatrixInput
+from ...step_viewer import StepViewer
+from ....methods.matrix_mth.multiplication import matrix_multiply, pretty_frac, handle_vector_warning, is_column_vector
+
+import tkinter as tk
+from tkinter import messagebox
+from .matrix_input import MatrixInput
+from ...step_viewer import StepViewer
+from ....methods.matrix_mth.multiplication import matrix_multiply, pretty_frac, handle_vector_warning, is_column_vector
+
+class MatrixMultiplyView(tk.Frame):
+    """Vista para multiplicar dos matrices A y B"""
+
+    def __init__(self, master, controller, *args, **kwargs):
+        super().__init__(master, bg="#0D1B2A", *args, **kwargs)
+        self.controller = controller
+        self.matrix_input_A = None
+        self.matrix_input_B = None
+        self._build_ui()
+
+    def _build_ui(self):
+        from ...theme import COLORS, FONTS
+
+        # Panel superior: controles de dimensiones + botones
+        controls = tk.Frame(self, bg=COLORS["panel"])
+        controls.pack(fill="x", padx=12, pady=12)
+
+        # Dimensiones Matriz A
+        dims_A = tk.Frame(controls, bg=COLORS["panel"])
+        dims_A.pack(side="left", padx=(0,20))
+        tk.Label(dims_A, text="Matriz A:", fg=COLORS["text"], bg=COLORS["panel"], font=FONTS["normal"]).pack(side="left")
+        self.ent_rows_A = tk.Entry(dims_A, width=4, justify="center", font=FONTS["normal"])
+        self.ent_rows_A.pack(side="left", padx=2)
+        tk.Label(dims_A, text="x", fg=COLORS["text"], bg=COLORS["panel"], font=FONTS["normal"]).pack(side="left")
+        self.ent_cols_A = tk.Entry(dims_A, width=4, justify="center", font=FONTS["normal"])
+        self.ent_cols_A.pack(side="left", padx=2)
+
+        # Dimensiones Matriz B
+        dims_B = tk.Frame(controls, bg=COLORS["panel"])
+        dims_B.pack(side="left", padx=(20,0))
+        tk.Label(dims_B, text="Matriz B:", fg=COLORS["text"], bg=COLORS["panel"], font=FONTS["normal"]).pack(side="left")
+        self.ent_rows_B = tk.Entry(dims_B, width=4, justify="center", font=FONTS["normal"])
+        self.ent_rows_B.pack(side="left", padx=2)
+        tk.Label(dims_B, text="x", fg=COLORS["text"], bg=COLORS["panel"], font=FONTS["normal"]).pack(side="left")
+        self.ent_cols_B = tk.Entry(dims_B, width=4, justify="center", font=FONTS["normal"])
+        self.ent_cols_B.pack(side="left", padx=2)
+
+        # Botones generar/multiplicar
+        actions = tk.Frame(controls, bg=COLORS["panel"])
+        actions.pack(side="right")
+        self.btn_gen = tk.Button(actions, text="Generar matrices", font=FONTS["normal"],
+                                 bg=COLORS["accent"], fg="#062235", bd=0, padx=12, pady=6,
+                                 command=self.generar_matrices)
+        self.btn_gen.pack(side="left", padx=6)
+        self.btn_mult = tk.Button(actions, text="Multiplicar", font=FONTS["normal"],
+                                  bg=COLORS["accent"], fg="#062235", bd=0, padx=12, pady=6,
+                                  command=self.calculate)
+        self.btn_mult.pack(side="left", padx=6)
+
+        # Panel principal: izquierda -> matrices + conclusiones, derecha -> pasos
+        main = tk.Frame(self, bg=COLORS["bg"])
+        main.pack(fill="both", expand=True, padx=12, pady=8)
+
+        # Columna izquierda
+        self.left_col = tk.Frame(main, bg=COLORS["bg"])
+        self.left_col.pack(side="left", fill="both", expand=False, padx=(0,8))
+
+        # Panel para matrices
+        self.mat_panel = tk.Frame(self.left_col, bg=COLORS["bg"])
+        self.mat_panel.pack(fill="both", expand=False)
+
+        # Panel de conclusiones (gris)
+        self.conclusions_panel = tk.Frame(self.left_col, bg=COLORS["card"])
+        self.conclusions_panel.pack(fill="both", expand=True, pady=(8,0))
+
+        self.txt_conclusions = tk.Text(
+            self.conclusions_panel,
+            height=16,
+            width=50,
+            bg=COLORS["card"],
+            fg=COLORS["text"],
+            bd=0,
+            wrap="word",
+            font=("Consolas", 13)
+        )
+        self.txt_conclusions.pack(side="left", fill="both", expand=True, padx=(8,0), pady=8)
+
+        scroll_c = tk.Scrollbar(self.conclusions_panel, command=self.txt_conclusions.yview)
+        self.txt_conclusions.configure(yscrollcommand=scroll_c.set)
+        scroll_c.pack(side="right", fill="y", padx=(0,8), pady=8)
+        self.txt_conclusions.configure(state="disabled")
+
+        # Columna derecha: StepViewer (azul)
+        self.right_col = tk.Frame(main, bg=COLORS["bg"])
+        self.right_col.pack(side="right", fill="both", expand=True)
+        self.step_viewer = StepViewer(self.right_col)
+        self.step_viewer.pack(fill="both", expand=True)
+
+    def generar_matrices(self):
+        try:
+            nA = int(self.ent_rows_A.get())
+            mA = int(self.ent_cols_A.get())
+            nB = int(self.ent_rows_B.get())
+            mB = int(self.ent_cols_B.get())
+            if nA <= 0 or mA <= 0 or nB <= 0 or mB <= 0:
+                raise ValueError
+            if mA != nB:
+                raise ValueError("Columnas de A deben coincidir con filas de B")
+        except Exception as e:
+            messagebox.showerror("Error", f"Dimensiones inválidas: {e}")
+            return
+
+        # Limpiar panel de matrices
+        for widget in self.mat_panel.winfo_children():
+            widget.destroy()
+
+        tk.Label(self.mat_panel, text="Matriz A", fg="white", bg="#0D1B2A").pack()
+        self.matrix_input_A = MatrixInput(self.mat_panel, rows=nA, cols=mA, include_rhs=False)
+        self.matrix_input_A.pack(pady=4)
+
+        tk.Label(self.mat_panel, text="Matriz B", fg="white", bg="#0D1B2A").pack()
+        self.matrix_input_B = MatrixInput(self.mat_panel, rows=nB, cols=mB, include_rhs=False)
+        self.matrix_input_B.pack(pady=4)
+
+        self.step_viewer.clear()
+        self.txt_conclusions.configure(state="normal")
+        self.txt_conclusions.delete("1.0", tk.END)
+        self.txt_conclusions.configure(state="disabled")
+
+    def calculate(self):
+        if not self.matrix_input_A or not self.matrix_input_B:
+            from tkinter import messagebox
+            messagebox.showwarning("Atención", "Primero genera las matrices")
+            return
+
+        # Obtener matrices
+        A = self.matrix_input_A.get_matrix()
+        B = self.matrix_input_B.get_matrix()
+
+        # Mensaje de vector (si aplica)
+        vector_warning = handle_vector_warning(A, B)
+
+        # Limpiar cuadros
+        self.txt_conclusions.configure(state="normal")
+        self.txt_conclusions.delete("1.0", tk.END)
+        self.step_viewer.clear()
+
+        # Multiplicación
+        try:
+            result, steps = matrix_multiply(A, B)
+        except ValueError as e:
+            self.txt_conclusions.insert(tk.END, vector_warning + f"Error: {e}")
+            self.txt_conclusions.configure(state="disabled")
+            return
+
+        # StepViewer azul: mostrar todos los pasos
+        for step in steps:
+            self.step_viewer.add_step(step["descripcion"], step["matriz"])
+        self.step_viewer.add_step("Resultado final", result)
+
+        # Cuadro gris: mostrar paso a paso y luego resultado final como C = [A, B]
+        self.txt_conclusions.insert(tk.END, vector_warning)
+        self.txt_conclusions.insert(tk.END, "Pasos de la multiplicación:\n\n")
+        for step in steps:
+            self.txt_conclusions.insert(tk.END, step["descripcion"] + "\n")
+            for row in step["matriz"]:
+                self.txt_conclusions.insert(tk.END, "  " + "  ".join(pretty_frac(x) for x in row) + "\n")
+            self.txt_conclusions.insert(tk.END, "\n")
+
+        # Resultado final
+        self.txt_conclusions.insert(tk.END, "Resultado final:\nC = [\n")
+        for row in result:
+            self.txt_conclusions.insert(tk.END, "  " + "  ".join(pretty_frac(x) for x in row) + "\n")
+        self.txt_conclusions.insert(tk.END, "]\n")
         self.txt_conclusions.configure(state="disabled")

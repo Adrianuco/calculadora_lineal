@@ -1,3 +1,4 @@
+# calculadora_lineal/gui/views/vectors/vector_input.py
 import tkinter as tk
 
 class VectorInput(tk.Frame):

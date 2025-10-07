@@ -37,3 +37,14 @@ class MatrixMenu(tk.Frame):
             command=lambda: self.controller.show_solution_view()
         )
         btn_solution.pack(pady=10, ipadx=10, ipady=5)
+
+        btn_multiplication = tk.Button(
+            self,
+            text="Multiplicación de Matrices",
+            font=FONTS["normal"],
+            bg=COLORS["accent"],
+            fg="white",
+            relief="flat",
+            command=lambda: self.controller.show_matrix_multiplication_view()
+        )
+        btn_multiplication.pack(pady=10, ipadx=10, ipady=5)

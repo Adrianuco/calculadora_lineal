@@ -1,3 +1,4 @@
+# calculadora_lineal/gui/views/vectors/vector_menu.py
 import tkinter as tk
 from ...theme import COLORS, FONTS
 
@@ -14,6 +15,7 @@ class VectorMenu(tk.Frame):
             ("Operaciones básicas (suma, resta, multiplicación)", controller.show_vector_operations),
             ("Combinación lineal", controller.show_vector_linear_comb),
             ("Ecuaciones vectoriales", controller.show_vector_equations),
+            ("Dependencia Lineal", lambda: controller.show_dependencia_view())
         ]
 
         for text, cmd in buttons:
