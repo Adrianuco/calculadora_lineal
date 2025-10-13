@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 # Importamos los menús principales de matrices y vectores
 from .views.matrix.matrix_menu import MatrixMenu
 from .views.vectors.vector_menu import VectorMenu
-from .views.matrix.matrices_view import MatricesView, MatrixMultiplyView
+from .views.matrix.matrices_view import MatricesView
 from .views.vectors.dependency_view import DependenciaView
 
 class AlgebraApp(tk.Tk):
@@ -183,13 +183,14 @@ class AlgebraApp(tk.Tk):
         frame = MatricesView(self.container)
         frame.pack(expand=True, fill="both")
 
-    def show_matrix_multiplication_view(self):
+    def show_matrix_operations_view(self):
         # Limpiar el contenedor principal
         for widget in self.container.winfo_children():
             widget.destroy()
 
-        # Crear la vista de multiplicación de matrices
-        frame = MatrixMultiplyView(self.container, self)
+        # Crear la vista de operaciones de matrices
+        from .views.matrix.matrices_view import MatrixOperationsView
+        frame = MatrixOperationsView(self.container, self)
         frame.pack(expand=True, fill="both")
     
     def show_vectores(self):
