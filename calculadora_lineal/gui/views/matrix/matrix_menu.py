@@ -48,3 +48,14 @@ class MatrixMenu(tk.Frame):
             command=lambda: self.controller.show_matrix_operations_view()
         )
         btn_operations.pack(pady=10, ipadx=10, ipady=5)
+
+        btn_inverse = tk.Button(
+            self,
+            text="Matriz Inversa",
+            font=FONTS["normal"],
+            bg=COLORS["accent"],
+            fg="white",
+            relief="flat",
+            command=lambda: self.controller.show_inverse_view()
+        )
+        btn_inverse.pack(pady=10, ipadx=10, ipady=5)

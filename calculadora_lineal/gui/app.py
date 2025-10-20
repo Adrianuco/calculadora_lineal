@@ -184,14 +184,19 @@ class AlgebraApp(tk.Tk):
         frame.pack(expand=True, fill="both")
 
     def show_matrix_operations_view(self):
-        # Limpiar el contenedor principal
         for widget in self.container.winfo_children():
             widget.destroy()
 
-        # Crear la vista de operaciones de matrices
         from .views.matrix.matrices_view import MatrixOperationsView
         frame = MatrixOperationsView(self.container, self)
         frame.pack(expand=True, fill="both")
+
+    def show_inverse_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.matrix.matrices_view import MatrixInverseView
+        frame = MatrixInverseView(self.container, controller=self)
+        frame.pack(fill="both", expand=True)
     
     def show_vectores(self):
         for widget in self.container.winfo_children():
