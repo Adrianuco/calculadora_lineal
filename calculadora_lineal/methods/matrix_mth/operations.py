@@ -46,26 +46,23 @@ class Matrix:
     def T(self):
         """Transpuesta de la matriz."""
         trans = [[self.data[i][j] for i in range(self.rows)] for j in range(self.cols)]
-        m = Matrix(trans, name=f"({self.name})^T" if self.name else None, steps=self.steps)
+        op = f"{self.name}^T" if self.name else "( )^T"
         self.steps.append({
-            "descripcion": f"Transponer {self.name or ''}",
-            "matriz": copy.deepcopy(m.data)
+            "descripcion": op,
+            "matriz": copy.deepcopy(trans)
         })
-        return m
+        return Matrix(trans, name=None, steps=self.steps)
 
     def __add__(self, other):
         if not isinstance(other, Matrix):
             raise ValueError("Solo se pueden sumar matrices entre sí.")
         if self.rows != other.rows or self.cols != other.cols:
             raise ValueError(
-                f"No se pudo sumar {self.name} y {other.name} porque sus dimensiones son distintas: "
-                f"{self.name} es {self.rows}×{self.cols}, "
-                f"{other.name} es {other.rows}×{other.cols}.\n"
-                "Asegúrate de que ambas matrices tengan el mismo número de filas y columnas."
+                f"No se pudo sumar {self.name} y {other.name} porque sus dimensiones son distintas."
             )
         res = [[self.data[i][j] + other.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-        desc = f"Suma ({self.name or 'M'}) + ({other.name or 'N'})"
-        self.steps.append({"descripcion": desc, "matriz": copy.deepcopy(res)})
+        op = f"{self.name} + {other.name}"
+        self.steps.append({"descripcion": op, "matriz": copy.deepcopy(res)})
         return Matrix(res, name=None, steps=self.steps)
 
     def __sub__(self, other):
@@ -73,24 +70,18 @@ class Matrix:
             raise ValueError("Solo se pueden restar matrices entre sí.")
         if self.rows != other.rows or self.cols != other.cols:
             raise ValueError(
-                f"No se pudo restar {self.name} y {other.name} porque sus dimensiones son distintas: "
-                f"{self.name} es {self.rows}×{self.cols}, "
-                f"{other.name} es {other.rows}×{other.cols}.\n"
-                "Asegúrate de que ambas matrices tengan el mismo número de filas y columnas."
+                f"No se pudo restar {self.name} y {other.name} porque sus dimensiones son distintas."
             )
         res = [[self.data[i][j] - other.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-        desc = f"Resta ({self.name or 'M'}) - ({other.name or 'N'})"
-        self.steps.append({"descripcion": desc, "matriz": copy.deepcopy(res)})
+        op = f"{self.name} - {other.name}"
+        self.steps.append({"descripcion": op, "matriz": copy.deepcopy(res)})
         return Matrix(res, name=None, steps=self.steps)
 
     def __mul__(self, other):
         if isinstance(other, Matrix):
             if self.cols != other.rows:
                 raise ValueError(
-                    f"No se pudo multiplicar {self.name} y {other.name} porque "
-                    f"{self.name} tiene {self.cols} columnas y {other.name} tiene {other.rows} filas.\n"
-                    f"Asegúrate de que el número de columnas de la matriz {self.name} "
-                    f"sea igual al número de filas de la matriz {other.name}."
+                    f"No se pudo multiplicar {self.name} y {other.name} por incompatibilidad de dimensiones."
                 )
             C = [[Fraction(0) for _ in range(other.cols)] for _ in range(self.rows)]
             for i in range(self.rows):
@@ -99,21 +90,21 @@ class Matrix:
                     for k in range(self.cols):
                         s += self.data[i][k] * other.data[k][j]
                     C[i][j] = s
-            desc = f"Multiplicación ({self.name or ''})×({other.name or ''})"
-            self.steps.append({"descripcion": desc, "matriz": copy.deepcopy(C)})
+            op = f"{self.name} * {other.name}"
+            self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
             return Matrix(C, name=None, steps=self.steps)
         else:
             s = to_fraction(other)
             C = [[s * self.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-            desc = f"Multiplicación escalar {pretty_frac(s)} × ({self.name or ''})"
-            self.steps.append({"descripcion": desc, "matriz": copy.deepcopy(C)})
+            op = f"{pretty_frac(s)} * {self.name}"
+            self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
             return Matrix(C, name=None, steps=self.steps)
 
     def __rmul__(self, other):
         s = to_fraction(other)
         C = [[s * self.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-        desc = f"Multiplicación escalar {pretty_frac(s)} × ({self.name or ''})"
-        self.steps.append({"descripcion": desc, "matriz": copy.deepcopy(C)})
+        op = f"{pretty_frac(s)} * {self.name}"
+        self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
         return Matrix(C, name=None, steps=self.steps)
 
     def as_list(self):
