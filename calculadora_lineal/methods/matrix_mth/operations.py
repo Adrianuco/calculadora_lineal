@@ -27,11 +27,6 @@ def pretty_frac(f: Fraction):
     return str(f.numerator) if f.denominator == 1 else f"{f.numerator}/{f.denominator}"
 
 class Matrix:
-    """
-    Clase liviana para representar matrices como lista de listas de Fraction
-    y sobrecargar operaciones (+, -, *, transpose).
-    Todas las operaciones registran pasos en la lista `steps` que se pasa al constructor.
-    """
     def __init__(self, data, name=None, steps=None):
         self.data = matrix_to_fraction(data)
         self.rows = len(self.data)
@@ -46,43 +41,37 @@ class Matrix:
     def T(self):
         """Transpuesta de la matriz."""
         trans = [[self.data[i][j] for i in range(self.rows)] for j in range(self.cols)]
-        op = f"{self.name}^T" if self.name else "( )^T"
+        op = f"({self.name})^T" if self.name else "( )^T"
         self.steps.append({
             "descripcion": op,
             "matriz": copy.deepcopy(trans)
         })
-        return Matrix(trans, name=None, steps=self.steps)
+        return Matrix(trans, name=op, steps=self.steps)
 
     def __add__(self, other):
         if not isinstance(other, Matrix):
             raise ValueError("Solo se pueden sumar matrices entre sí.")
         if self.rows != other.rows or self.cols != other.cols:
-            raise ValueError(
-                f"No se pudo sumar {self.name} y {other.name} porque sus dimensiones son distintas."
-            )
+            raise ValueError(f"No se pudo sumar {self.name} y {other.name} porque sus dimensiones son distintas.")
         res = [[self.data[i][j] + other.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
         op = f"{self.name} + {other.name}"
         self.steps.append({"descripcion": op, "matriz": copy.deepcopy(res)})
-        return Matrix(res, name=None, steps=self.steps)
+        return Matrix(res, name=op, steps=self.steps)
 
     def __sub__(self, other):
         if not isinstance(other, Matrix):
             raise ValueError("Solo se pueden restar matrices entre sí.")
         if self.rows != other.rows or self.cols != other.cols:
-            raise ValueError(
-                f"No se pudo restar {self.name} y {other.name} porque sus dimensiones son distintas."
-            )
+            raise ValueError(f"No se pudo restar {self.name} y {other.name} porque sus dimensiones son distintas.")
         res = [[self.data[i][j] - other.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
         op = f"{self.name} - {other.name}"
         self.steps.append({"descripcion": op, "matriz": copy.deepcopy(res)})
-        return Matrix(res, name=None, steps=self.steps)
+        return Matrix(res, name=op, steps=self.steps)
 
     def __mul__(self, other):
         if isinstance(other, Matrix):
             if self.cols != other.rows:
-                raise ValueError(
-                    f"No se pudo multiplicar {self.name} y {other.name} por incompatibilidad de dimensiones."
-                )
+                raise ValueError(f"No se pudo multiplicar {self.name} y {other.name} por incompatibilidad de dimensiones.")
             C = [[Fraction(0) for _ in range(other.cols)] for _ in range(self.rows)]
             for i in range(self.rows):
                 for j in range(other.cols):
@@ -90,22 +79,22 @@ class Matrix:
                     for k in range(self.cols):
                         s += self.data[i][k] * other.data[k][j]
                     C[i][j] = s
-            op = f"{self.name} * {other.name}"
+            op = f"{self.name}{other.name}"  # sin asterisco
             self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
-            return Matrix(C, name=None, steps=self.steps)
+            return Matrix(C, name=op, steps=self.steps)
         else:
             s = to_fraction(other)
             C = [[s * self.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-            op = f"{pretty_frac(s)} * {self.name}"
+            op = f"{pretty_frac(s)}{self.name}"
             self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
-            return Matrix(C, name=None, steps=self.steps)
+            return Matrix(C, name=op, steps=self.steps)
 
     def __rmul__(self, other):
         s = to_fraction(other)
         C = [[s * self.data[i][j] for j in range(self.cols)] for i in range(self.rows)]
-        op = f"{pretty_frac(s)} * {self.name}"
+        op = f"{pretty_frac(s)}({self.name})"
         self.steps.append({"descripcion": op, "matriz": copy.deepcopy(C)})
-        return Matrix(C, name=None, steps=self.steps)
+        return Matrix(C, name=op, steps=self.steps)
 
     def as_list(self):
         return [[to_fraction(x) for x in row] for row in self.data]
