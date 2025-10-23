@@ -738,7 +738,7 @@ class MatrixInverseView(tk.Frame):
                 A_rref, _ = self._rref_of_A(A_frac)
                 piv, rank = self._pivot_info(A_rref)
                 lines = []
-                lines.append("✅ La matriz es invertible (2x2).")
+                lines.append("✅ Determinante ≠ 0 -> La matriz es invertible (2x2).")
                 lines.append("Es una matriz no singular.")
                 lines.append("\nMatriz inversa A⁻¹:\n")
                 lines.append(self._format_matrix_pretty(inv))
@@ -780,8 +780,8 @@ class MatrixInverseView(tk.Frame):
         if rank < n:
             # No invertible
             lines = []
-            lines.append("⚠️ La matriz NO es invertible (no se redujo a identidad).")
-            lines.append("Es una matriz singular.")
+            lines.append("⚠️ Determinante = 0 -> La matriz NO es invertible (no se redujo a identidad).")
+            lines.append("Es una matriz singular.\n")
             lines.append(f"A tiene {rank} posiciones pivote")
             lines.append("La ecuación Ax = 0 tiene soluciones no triviales.")
             lines.append("Las columnas de A NO son linealmente independientes.")
@@ -820,7 +820,7 @@ class MatrixInverseView(tk.Frame):
         else:
             # solo mostrar inversa y mensajes
             lines = []
-            lines.append("✅ La matriz es invertible.")
+            lines.append("✅ Determinante ≠ 0 -> La matriz es invertible.")
             lines.append("Es una matriz no singular.")
             lines.append("\nMatriz inversa A⁻¹:\n")
             lines.append(self._format_matrix_pretty(inv))
