@@ -187,14 +187,14 @@ class AlgebraApp(tk.Tk):
         for widget in self.container.winfo_children():
             widget.destroy()
 
-        from .views.matrix.matrices_view import MatrixOperationsView
+        from .views.matrix.matrix_operations_view import MatrixOperationsView
         frame = MatrixOperationsView(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_inverse_view(self):
         for widget in self.container.winfo_children():
             widget.destroy()
-        from .views.matrix.matrices_view import MatrixInverseView
+        from .views.matrix.matrix_inverse_view import MatrixInverseView
         frame = MatrixInverseView(self.container, controller=self)
         frame.pack(fill="both", expand=True)
     
