@@ -231,6 +231,13 @@ class AlgebraApp(tk.Tk):
         frame = DependenciaView(self.container, self)
         frame.pack(expand=True, fill="both")
 
+    def show_determinant_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.matrix.determinant_view import DeterminantView
+        frame = DeterminantView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
     def show_placeholder(self, name):
         frame = tk.Frame(self.container, bg=COLORS["bg"])
         frame.pack(expand=True, fill="both")

@@ -2,38 +2,11 @@
 from fractions import Fraction
 import copy
 from .gauss_jordan import to_fraction, gauss_jordan, pretty_frac
+from ..matrix_mth.gauss import determinant_gauss
 
 def _to_fraction_matrix(A):
     """Convierte A (lista de filas) a Fraction, deep copy."""
     return [[to_fraction(x) for x in row] for row in copy.deepcopy(A)]
-
-def determinant(A):
-    """
-    Determinante recursivo (usando cofactores). Devuelve Fraction.
-    A debe ser cuadrada (n x n).
-    """
-    A = _to_fraction_matrix(A)
-    n = len(A)
-    if any(len(row) != n for row in A):
-        raise ValueError("Determinante: la matriz debe ser cuadrada.")
-    if n == 0:
-        return Fraction(1)
-    if n == 1:
-        return A[0][0]
-    if n == 2:
-        return A[0][0]*A[1][1] - A[0][1]*A[1][0]
-
-    # expansión por la primera fila
-    det = Fraction(0)
-    for j in range(n):
-        # construir menor removiendo fila 0 y columna j
-        minor = []
-        for r in range(1, n):
-            row = [A[r][c] for c in range(n) if c != j]
-            minor.append(row)
-        cofactor = ((-1) ** j) * A[0][j] * determinant(minor)
-        det += cofactor
-    return det
 
 def _identity(n):
     return [[Fraction(1) if i==j else Fraction(0) for j in range(n)] for i in range(n)]
@@ -83,7 +56,6 @@ def inverse_matrix(A, record_steps=True):
     Para 2x2 usa fórmula cerrada (y registra pasos simples).
     Para n>=3 usa [A|I] + gauss_jordan sobre la aumentada.
     """
-    # Validar cuadrada
     A = _to_fraction_matrix(A)
     n = len(A)
     if any(len(row) != n for row in A):
@@ -92,7 +64,6 @@ def inverse_matrix(A, record_steps=True):
     steps = []
     conclusions = []
 
-    # --- Caso 2x2: usar fórmula y det ---
     if n == 0:
         return [], [], ["Matriz vacía."]
 
@@ -102,20 +73,17 @@ def inverse_matrix(A, record_steps=True):
             conclusions.append("Determinante = 0 → no tiene inversa.")
             return None, steps, conclusions
         inv = [[Fraction(1)/a]]
-        # pasos: mostrar determinante y la inversa
         steps.append({"descripcion": f"Determinante = {pretty_frac(a)}. Inversa trivial.", "matriz": [[a]]})
         conclusions.append("A tiene 1 posiciones pivote")
-        conclusions.append("La ecuación Ax = 0 tiene solamente solución trivial.")  # si a != 0
+        conclusions.append("La ecuación Ax = 0 tiene solamente solución trivial.")
         conclusions.append("Las columnas de A forman un conjunto linealmente independiente.")
         return inv, steps, conclusions
 
     if n == 2:
-        det = determinant(A)
-        steps.append({"descripcion": f"Cálculo del determinante (2x2): det = a*d - b*c = {pretty_frac(det)}", "matriz": copy.deepcopy(A)})
+        det = determinant_gauss(A)
+        steps.append({"descripcion": f"Cálculo del determinante (Gauss): det = {pretty_frac(det)}", "matriz": copy.deepcopy(A)})
         if det == 0:
             conclusions.append("Determinante = 0 → la matriz NO es invertible.")
-            # También los mensajes generales (rank < n)
-            # obtener rref para estadísticas
             A_rref, _ = _rref_of_A(A)
             pivot_cols, rank = _pivot_info_from_rref(A_rref)
             conclusions.append(f"A tiene {rank} posiciones pivote")
@@ -124,7 +92,6 @@ def inverse_matrix(A, record_steps=True):
                 conclusions.append("Las columnas de A NO son linealmente independientes.")
             return None, steps, conclusions
 
-        # fórmula clásica:
         a, b = A[0][0], A[0][1]
         c, d = A[1][0], A[1][1]
         inv = [
@@ -132,7 +99,10 @@ def inverse_matrix(A, record_steps=True):
             [ -c / det, a / det ]
         ]
         steps.append({"descripcion": f"Aplicamos fórmula inversa 2x2 multiplicando por 1/det = 1/{pretty_frac(det)}", "matriz": copy.deepcopy(inv)})
-        # conclusiones: calcular pivotes a partir del RREF de A
+
+        product = [[sum(A[i][k] * inv[k][j] for k in range(2)) for j in range(2)] for i in range(2)]
+        steps.append({"descripcion": "Verificamos A * A⁻¹ (debe dar la identidad):", "matriz": product})
+
         A_rref, _ = _rref_of_A(A)
         pivot_cols, rank = _pivot_info_from_rref(A_rref)
         conclusions.append(f"A tiene {rank} posiciones pivote")
@@ -144,37 +114,34 @@ def inverse_matrix(A, record_steps=True):
             conclusions.append("Las columnas de A NO son linealmente independientes.")
         return inv, steps, conclusions
 
-    # --- Caso n >= 3: usar gauss_jordan sobre [A | I] ---
-    # construir aumentada
     I = _identity(n)
     A_aug = [row + I_row for row, I_row in zip(A, I)]
-    # llamar gauss_jordan (nos da pasos detallados)
     A_rref_aug, gj_steps = gauss_jordan(A_aug, record_steps=record_steps)
 
-    # anexar los pasos de gauss_jordan al resultado
     if record_steps:
-        # gauss_jordan devuelve pasos describiendo las operaciones sobre la aumentada completa
-        # los usamos tal cual para StepViewer
         steps.extend(gj_steps)
 
-    # extraer la parte izquierda (should be identity) y derecha (inversa candidata)
     left_rref = [row[:n] for row in A_rref_aug]
     right_candidate = [row[n:] for row in A_rref_aug]
 
-    # Comprobar si left_rref == I (en RREF, si es invertible tendrá pivotes en todas las columnas)
     pivot_cols, rank = _pivot_info_from_rref(left_rref)
     if rank < n:
         conclusions.append(f"A tiene {rank} posiciones pivote")
         conclusions.append("La ecuación Ax = 0 tiene soluciones no triviales.")
         conclusions.append("Las columnas de A NO son linealmente independientes.")
-        # Añadir paso final indicando fallo
         steps.append({"descripcion": "La parte izquierda no pudo reducirse a la identidad → A no es invertible.", "matriz": left_rref})
         return None, steps, conclusions
 
-    # si llegamos aquí, extraemos inversa
     conclusions.append(f"A tiene {rank} posiciones pivote")
     conclusions.append("La ecuación Ax = 0 tiene solamente solución trivial.")
     conclusions.append("Las columnas de A forman un conjunto linealmente independiente.")
+
+    product = [[sum(A[i][k] * right_candidate[k][j] for k in range(n)) for j in range(n)] for i in range(n)]
+    steps.append({
+        "descripcion": "Verificamos A * A⁻¹ (debe dar la identidad):",
+        "matriz": product
+    })
+
     return right_candidate, steps, conclusions
 
 def solve_system_with_inverse_2x2(A, b):
@@ -190,19 +157,16 @@ def solve_system_with_inverse_2x2(A, b):
 
     inv, steps, conclusions = inverse_matrix(A, record_steps=True)
     if inv is None:
-        # inverse_matrix ya generó pasos y conclusiones
         return None, steps, conclusions
 
-    # multiplicación x = inv * b
     b_f = [to_fraction(x) for x in b]
     x = []
-    mult_steps_matrix = []
     for i in range(2):
         s = Fraction(0)
         for j in range(2):
             s += inv[i][j] * b_f[j]
         x.append(s)
-    # registrar el paso de multiplicación (para mostrar)
+
     mult_mat = [
         [inv[0][0], inv[0][1], b_f[0]],
         [inv[1][0], inv[1][1], b_f[1]]

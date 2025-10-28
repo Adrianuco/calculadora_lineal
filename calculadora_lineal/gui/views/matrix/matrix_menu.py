@@ -59,3 +59,14 @@ class MatrixMenu(tk.Frame):
             command=lambda: self.controller.show_inverse_view()
         )
         btn_inverse.pack(pady=10, ipadx=10, ipady=5)
+
+        btn_determinant = tk.Button(
+            self,
+            text="Determinante",
+            font=FONTS["normal"],
+            bg=COLORS["accent"],
+            fg="white",
+            relief="flat",
+            command=lambda: self.controller.show_determinant_view()
+        )
+        btn_determinant.pack(pady=10, ipadx=10, ipady=5)
