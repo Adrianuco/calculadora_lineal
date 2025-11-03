@@ -1,4 +1,3 @@
-# calculadora_lineal/gui/views/matrix/determinant_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 from fractions import Fraction
@@ -19,24 +18,20 @@ class ReadOnlyMatrix(tk.Frame):
         self._build()
 
     def _build(self):
-        # Limpia contenido previo
         for widget in self.winfo_children():
             widget.destroy()
 
         total_cols = len(self.matrix[0]) if self.matrix else 0
-        # Col headers
         if self.col_headers:
             for j, h in enumerate(self.col_headers[:total_cols]):
                 lbl = tk.Label(self, text=str(h), font=("Segoe UI", 9, "bold"),
                                bg="#1B263B", fg="white", borderwidth=1, relief="solid",
                                width=10, anchor="center")
                 lbl.grid(row=0, column=j, padx=1, pady=1)
-
             start_row = 1
         else:
             start_row = 0
 
-        # Contenido
         for i, fila in enumerate(self.matrix):
             for j, val in enumerate(fila):
                 lbl = tk.Label(self, text=pretty_frac(val),
@@ -94,7 +89,6 @@ class DeterminantView(tk.Frame):
         self.matrix_container = tk.Frame(left, bg=COLORS["bg"])
         self.matrix_container.pack(pady=8)
 
-        # Para vector b a la par (solo Cramer)
         self.vector_b_container = tk.Frame(left, bg=COLORS["bg"])
         self.vector_b_container.pack(pady=8)
 
@@ -132,7 +126,6 @@ class DeterminantView(tk.Frame):
             messagebox.showerror("Error", f"Ingrese un tamaño válido: {e}")
             return
 
-        # Limpiar contenedores
         for widget in self.matrix_container.winfo_children():
             widget.destroy()
         for widget in self.vector_b_container.winfo_children():
@@ -143,20 +136,14 @@ class DeterminantView(tk.Frame):
         col_headers = [f"a{j+1}" for j in range(n)]
 
         if self.method.get() == "Método de Cramer":
-            # Para cramer: matriz + vector b al lado
             frame = tk.Frame(self.matrix_container, bg="#0D1B2A")
             frame.pack()
-
             self.matrix_widget = MatrixInput(frame, rows=n, cols=n, include_rhs=False, col_headers=col_headers)
             self.matrix_widget.pack(side="left", padx=(0, 6), pady=6)
 
-            # Vector b readonly a la par
-            b_placeholder = [[Fraction(0)] for _ in range(n)]
             self.vector_b_widget = MatrixInput(frame, rows=n, cols=1, include_rhs=False, col_headers=["b"])
             self.vector_b_widget.pack(side="left", padx=(6,0), pady=6)
-
         else:
-            # Solo matriz cuadrada
             self.matrix_widget = MatrixInput(self.matrix_container, rows=n, cols=n, include_rhs=False, col_headers=col_headers)
             self.matrix_widget.pack(pady=6)
 
@@ -178,16 +165,13 @@ class DeterminantView(tk.Frame):
                     messagebox.showerror("Error", "Vector b no generado.")
                     return
                 b = self.vector_b_widget.get_matrix(parse=True)
-                # b es matriz n x 1, lo convertimos a lista simple
                 b = [row[0] for row in b]
-                # Validamos que b tenga tamaño compatible
                 if len(b) != n:
                     messagebox.showerror("Error", "Vector b tiene tamaño incompatible.")
                     return
             else:
                 b = None
 
-            # Convertir todo a Fraction
             A = [[to_fraction(x) for x in row] for row in A]
             if b:
                 b = [to_fraction(x) for x in b]
@@ -202,30 +186,16 @@ class DeterminantView(tk.Frame):
 
         try:
             if metodo == "Regla de Sarrus":
-                resultado = regla_sarrus(A)
+                resultado = regla_sarrus(A, step_viewer=self.step_viewer)
                 det = resultado["resultado"]
-                pasos = resultado["pasos"]
-                texto_final = f"Determinante (Sarrus): {pretty_frac(det)}"
 
             elif metodo == "Expansión por Cofactores":
-                resultado = determinante_cofactores(A)
+                resultado = determinante_cofactores(A, step_viewer=self.step_viewer)
                 det = resultado["resultado"]
-                pasos = resultado["pasos"]
-                texto_final = f"Determinante (Cofactores): {pretty_frac(det)}"
 
             else:  # Método de Cramer
-                resultado = metodo_cramer(A, b)
+                resultado = metodo_cramer(A, b, step_viewer=self.step_viewer)
                 det = resultado["detA"]
-                pasos = resultado["pasos"]
-                if resultado["resultado"] is not None:
-                    texto_final = "Soluciones (Cramer):\n" + "\n".join(
-                        [f"x{i+1} = {pretty_frac(x)}" for i, x in enumerate(resultado["resultado"])]
-                    )
-                else:
-                    texto_final = "No se puede aplicar Cramer (det(A)=0)."
-
-            for p in pasos:
-                self.step_viewer.add_text(p)
 
             texto_result = []
             texto_result.append("Resultado Final:\n")
@@ -236,7 +206,6 @@ class DeterminantView(tk.Frame):
                 texto_result.append("La matriz es no singular (invertible).")
 
             texto_result.append("\n" + verificar_propiedades(A, det))
-
             self._mostrar_result("\n".join(texto_result))
 
         except Exception as e:
