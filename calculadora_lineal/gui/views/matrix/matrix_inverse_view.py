@@ -1,3 +1,4 @@
+# calculadora_lineal/gui/views/matrix/matrix_inverse_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 from .matrix_input import MatrixInput
@@ -5,6 +6,7 @@ from ...step_viewer import StepViewer
 from ....methods.matrix_mth.gauss_jordan import gauss_jordan, pretty_frac, to_fraction
 from ....methods.matrix_mth.operations import pretty_frac, to_fraction
 from ....methods.matrix_mth.gauss import determinant_gauss
+from ....methods.matrix_mth.reverse import adjunta_matrix
 from fractions import Fraction
 
 
@@ -34,7 +36,7 @@ class MatrixInverseView(tk.Frame):
         self.combo_mode = ttk.Combobox(
             controls,
             textvariable=self.mode,
-            values=["Matriz cuadrada", "Sistema (Ax = b)"],
+            values=["Matriz cuadrada", "Sistema (Ax = b)", "Adjunta de una matriz"],
             state="readonly",
             width=20
         )
@@ -188,8 +190,20 @@ class MatrixInverseView(tk.Frame):
             return
 
         A = [[to_fraction(x) for x in row] for row in A]
+        self.step_viewer.clear()
+        self._clear_result_text()
 
-        # Vector b
+        if self.mode.get() == "Adjunta de una matriz":
+            adj, steps, conclusions = adjunta_matrix(A, record_steps=True)
+            for s in steps:
+                self.step_viewer.add_step(s["descripcion"], s["matriz"])
+
+            texto = "Matriz Adjunta - Resultado Final:\n\n"
+            texto += f"Adj(A):\n{self._format_matrix_pretty(adj)}\n\n"
+            texto += "\n".join(conclusions)
+            self._mostrar_result_text(texto)
+            return
+
         b_vec = None
         if self.mode.get() == "Sistema (Ax = b)":
             try:
@@ -198,23 +212,17 @@ class MatrixInverseView(tk.Frame):
                 messagebox.showerror("Error al leer vector b", str(e))
                 return
 
-        self.step_viewer.clear()
-
-        # Paso 1: matriz aumentada [A | I]
         I = [[Fraction(1 if i == j else 0) for j in range(n)] for i in range(n)]
         A_aug = [A[i] + I[i] for i in range(n)]
         self.step_viewer.add_step("Matriz aumentada inicial [A | I]:", A_aug)
 
-        # Paso 2: determinante
         det = determinant_gauss(A)
         self.step_viewer.add_step(f"Cálculo del determinante: det(A) = {pretty_frac(det)}", A)
 
-        # Si determinante = 0 → no invertible
         if det == 0:
             A_rref_aug, _ = gauss_jordan(A_aug, record_steps=True)
             left_rref = [row[:n] for row in A_rref_aug]
             piv_cols, rank = self._pivot_info(left_rref)
-
             texto = "⚠️ Determinante = 0 → La matriz NO es invertible.\n"
             texto += "Es una matriz singular.\n\n"
             texto += f"A tiene {rank} posiciones pivote.\n"
@@ -223,7 +231,6 @@ class MatrixInverseView(tk.Frame):
             self._mostrar_result_text(texto)
             return
 
-        # Paso 3: Gauss-Jordan
         A_rref_aug, pasos = gauss_jordan(A_aug, record_steps=True)
         for p in pasos:
             self.step_viewer.add_step(p["descripcion"], p["matriz"])
@@ -231,18 +238,14 @@ class MatrixInverseView(tk.Frame):
         left_rref = [row[:n] for row in A_rref_aug]
         inv = [row[n:] for row in A_rref_aug]
         piv_cols, rank = self._pivot_info(left_rref)
-
-        # Paso 4: verificación A * A^-1
         product = [[sum(A[i][k] * inv[k][j] for k in range(n)) for j in range(n)] for i in range(n)]
         self.step_viewer.add_step("Verificación final: A * A⁻¹ (debe ser la identidad)", product)
 
-        # Resultado
         lines = []
         lines.append("✅ Determinante ≠ 0 → La matriz es invertible.\n")
         lines.append("Es una matriz no singular.\n")
 
         if b_vec is not None:
-            # Resolver x = A^-1 * b
             x = []
             for i in range(n):
                 s = Fraction(0)
@@ -264,8 +267,6 @@ class MatrixInverseView(tk.Frame):
         else:
             lines.append("La ecuación Ax = 0 tiene soluciones no triviales.")
             lines.append("Las columnas de A NO son linealmente independientes.")
-
         lines.append("\nVerificación A * A⁻¹:\n")
         lines.append(self._format_matrix_pretty(product))
-
         self._mostrar_result_text("\n".join(lines))

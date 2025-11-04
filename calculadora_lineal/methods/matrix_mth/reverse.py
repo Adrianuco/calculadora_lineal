@@ -3,6 +3,7 @@ from fractions import Fraction
 import copy
 from .gauss_jordan import to_fraction, gauss_jordan, pretty_frac
 from ..matrix_mth.gauss import determinant_gauss
+from ..matrix_mth.determinant import determinante_cofactores
 
 def _to_fraction_matrix(A):
     """Convierte A (lista de filas) a Fraction, deep copy."""
@@ -173,3 +174,65 @@ def solve_system_with_inverse_2x2(A, b):
     ]
     steps.append({"descripcion": "Multiplicamos A^{-1} por b para obtener x.", "matriz": mult_mat})
     return x, steps, conclusions
+
+def adjunta_matrix(A, record_steps=True):
+    """
+    Calcula la matriz adjunta de A:
+      - Determinante mediante cofactores
+      - Matriz de cofactores
+      - Transpuesta
+      - (Opcional) inversa = Adj(A)/det(A)
+    Devuelve (adjunta, steps, conclusions)
+    """
+
+    A = _to_fraction_matrix(A)
+    n = len(A)
+    if any(len(row) != n for row in A):
+        raise ValueError("La matriz debe ser cuadrada para calcular la adjunta.")
+
+    steps = []
+    conclusions = []
+
+    steps.append({"descripcion": "Matriz original A", "matriz": copy.deepcopy(A)})
+
+    det_result = determinante_cofactores(A)
+    if isinstance(det_result, dict):
+        det = det_result.get("resultado", 0)
+        det_steps = det_result.get("pasos", [])
+    elif isinstance(det_result, tuple) and len(det_result) == 2:
+        det, det_steps = det_result
+    else:
+        det = det_result
+        det_steps = []
+
+    for st in det_steps:
+        if isinstance(st, dict) and "descripcion" in st and "matriz" in st:
+            steps.append(st)
+        elif isinstance(st, str):
+            steps.append({"descripcion": st, "matriz": copy.deepcopy(A)})
+
+    steps.append({
+        "descripcion": f"Determinante (método de cofactores): det(A) = {pretty_frac(det)}",
+        "matriz": copy.deepcopy(A)
+    })
+
+    if det == 0:
+        conclusions.append("Determinante = 0 → la matriz NO es invertible (pero sí tiene adjunta).")
+
+    def minor(M, i, j):
+        return [row[:j] + row[j+1:] for r, row in enumerate(M) if r != i]
+
+    cofactors = [[Fraction(((-1)**(i+j))) * determinant_gauss(minor(A, i, j)) for j in range(n)] for i in range(n)]
+    steps.append({"descripcion": "Matriz de cofactores", "matriz": copy.deepcopy(cofactors)})
+
+    adjunta = [[cofactors[j][i] for j in range(n)] for i in range(n)]
+    steps.append({"descripcion": "Transpuesta de la matriz de cofactores (Adjunta)", "matriz": copy.deepcopy(adjunta)})
+
+    if det != 0:
+        inversa = [[adjunta[i][j] / det for j in range(n)] for i in range(n)]
+        steps.append({"descripcion": "Inversa (Adj(A)/det(A))", "matriz": inversa})
+        conclusions.append("✅ Determinante ≠ 0 → A es invertible.")
+    else:
+        conclusions.append("⚠️ No se puede calcular la inversa (det(A)=0).")
+
+    return adjunta, steps, conclusions
