@@ -256,7 +256,7 @@ def verificar_propiedades(A, det):
         else:
             texto.append("     No se cumple (puede que det=0)\n")
 
-    # ▫️ Propiedad 4
+    # Propiedad 4
     if n >= 2:
         texto.append("4.  Si una fila se multiplica por un escalar k → det se multiplica por k\n")
 

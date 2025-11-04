@@ -204,8 +204,10 @@ class DeterminantView(tk.Frame):
                 texto_result.append("La matriz es singular (no invertible).")
             else:
                 texto_result.append("La matriz es no singular (invertible).")
-
-            texto_result.append("\n" + verificar_propiedades(A, det))
+            if det == 0:
+                pass
+            else:
+                texto_result.append("\n" + verificar_propiedades(A, det))
             self._mostrar_result("\n".join(texto_result))
 
         except Exception as e:
