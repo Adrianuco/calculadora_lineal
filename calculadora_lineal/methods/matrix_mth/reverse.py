@@ -205,7 +205,7 @@ def adjunta_matrix(A, record_steps=True):
         det = det_result
 
     steps.append({
-        "descripcion": f"1️⃣ Determinante por cofactores: det(A) = {pretty_frac(det)}",
+        "descripcion": f"Determinante por cofactores: det(A) = {pretty_frac(det)}",
         "matriz": [[pretty_frac(det)]]
     })
 
@@ -213,7 +213,7 @@ def adjunta_matrix(A, record_steps=True):
         conclusions.append("⚠️ Determinante = 0 → la matriz NO es invertible (pero sí tiene adjunta).")
 
     # === Paso 2: Matriz de cofactores ===
-    steps.append({"descripcion": "2️⃣ Cálculo de la matriz de cofactores", "matriz": copy.deepcopy(A)})
+    steps.append({"descripcion": "Cálculo de la matriz de cofactores", "matriz": copy.deepcopy(A)})
 
     def minor(M, i, j):
         """Devuelve la submatriz eliminando fila i y columna j."""
@@ -235,13 +235,13 @@ def adjunta_matrix(A, record_steps=True):
 
     # === Paso 3: Transpuesta (Adjunta) ===
     adjunta = [[cofactors[j][i] for j in range(n)] for i in range(n)]
-    steps.append({"descripcion": "3️⃣ Transpuesta de la matriz de cofactores (Adjunta)", "matriz": copy.deepcopy(adjunta)})
+    steps.append({"descripcion": "Transpuesta de la matriz de cofactores (Adjunta)", "matriz": copy.deepcopy(adjunta)})
 
     # === Paso 4: Inversa ===
     if det != 0:
         inversa = [[adjunta[i][j] / det for j in range(n)] for i in range(n)]
         steps.append({
-            "descripcion": f"4️⃣ Inversa A⁻¹ = (1 / det(A)) × Adj(A)",
+            "descripcion": f"Inversa A⁻¹ = (1 / det(A)) × Adj(A)",
             "matriz": copy.deepcopy(inversa)
         })
         conclusions.append("✅ Determinante ≠ 0 → A es invertible.")
