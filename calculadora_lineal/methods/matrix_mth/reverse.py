@@ -177,62 +177,76 @@ def solve_system_with_inverse_2x2(A, b):
 
 def adjunta_matrix(A, record_steps=True):
     """
-    Calcula la matriz adjunta de A:
-      - Determinante mediante cofactores
-      - Matriz de cofactores
-      - Transpuesta
-      - (Opcional) inversa = Adj(A)/det(A)
-    Devuelve (adjunta, steps, conclusions)
+    Calcula la inversa de A mediante la adjunta:
+      1. Determinante (por cofactores, mostrando solo suma final)
+      2. Matriz de cofactores (mostrando cada cofactor)
+      3. Transpuesta de la matriz de cofactores (Adjunta)
+      4. Inversa = Adj(A) / det(A)
+    Devuelve (inversa, steps, conclusions)
     """
-
+    from ..matrix_mth.determinant import determinante_cofactores
     A = _to_fraction_matrix(A)
     n = len(A)
+
     if any(len(row) != n for row in A):
-        raise ValueError("La matriz debe ser cuadrada para calcular la adjunta.")
+        raise ValueError("La matriz debe ser cuadrada para calcular la inversa mediante adjunta.")
 
     steps = []
     conclusions = []
-
     steps.append({"descripcion": "Matriz original A", "matriz": copy.deepcopy(A)})
 
+    # === Paso 1: Determinante ===
     det_result = determinante_cofactores(A)
     if isinstance(det_result, dict):
         det = det_result.get("resultado", 0)
-        det_steps = det_result.get("pasos", [])
-    elif isinstance(det_result, tuple) and len(det_result) == 2:
-        det, det_steps = det_result
+    elif isinstance(det_result, tuple):
+        det = det_result[0]
     else:
         det = det_result
-        det_steps = []
-
-    for st in det_steps:
-        if isinstance(st, dict) and "descripcion" in st and "matriz" in st:
-            steps.append(st)
-        elif isinstance(st, str):
-            steps.append({"descripcion": st, "matriz": copy.deepcopy(A)})
 
     steps.append({
-        "descripcion": f"Determinante (método de cofactores): det(A) = {pretty_frac(det)}",
-        "matriz": copy.deepcopy(A)
+        "descripcion": f"1️⃣ Determinante por cofactores: det(A) = {pretty_frac(det)}",
+        "matriz": [[pretty_frac(det)]]
     })
 
     if det == 0:
-        conclusions.append("Determinante = 0 → la matriz NO es invertible (pero sí tiene adjunta).")
+        conclusions.append("⚠️ Determinante = 0 → la matriz NO es invertible (pero sí tiene adjunta).")
+
+    # === Paso 2: Matriz de cofactores ===
+    steps.append({"descripcion": "2️⃣ Cálculo de la matriz de cofactores", "matriz": copy.deepcopy(A)})
 
     def minor(M, i, j):
+        """Devuelve la submatriz eliminando fila i y columna j."""
         return [row[:j] + row[j+1:] for r, row in enumerate(M) if r != i]
 
-    cofactors = [[Fraction(((-1)**(i+j))) * determinant_gauss(minor(A, i, j)) for j in range(n)] for i in range(n)]
-    steps.append({"descripcion": "Matriz de cofactores", "matriz": copy.deepcopy(cofactors)})
+    cofactors = [[0 for _ in range(n)] for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            sub = minor(A, i, j)
+            det_minor = determinant_gauss(sub)
+            signo = (-1) ** (i + j)
+            cofactors[i][j] = Fraction(signo) * det_minor
+            steps.append({
+                "descripcion": f"Cofactor C{i+1}{j+1} = ({'-' if signo == -1 else '+'})·det(M{i+1}{j+1}) = {pretty_frac(cofactors[i][j])}",
+                "matriz": copy.deepcopy(sub)
+            })
 
+    steps.append({"descripcion": "Matriz de cofactores completa", "matriz": copy.deepcopy(cofactors)})
+
+    # === Paso 3: Transpuesta (Adjunta) ===
     adjunta = [[cofactors[j][i] for j in range(n)] for i in range(n)]
-    steps.append({"descripcion": "Transpuesta de la matriz de cofactores (Adjunta)", "matriz": copy.deepcopy(adjunta)})
+    steps.append({"descripcion": "3️⃣ Transpuesta de la matriz de cofactores (Adjunta)", "matriz": copy.deepcopy(adjunta)})
 
+    # === Paso 4: Inversa ===
     if det != 0:
         inversa = [[adjunta[i][j] / det for j in range(n)] for i in range(n)]
-        steps.append({"descripcion": "Inversa (Adj(A)/det(A))", "matriz": inversa})
+        steps.append({
+            "descripcion": f"4️⃣ Inversa A⁻¹ = (1 / det(A)) × Adj(A)",
+            "matriz": copy.deepcopy(inversa)
+        })
         conclusions.append("✅ Determinante ≠ 0 → A es invertible.")
     else:
-        conclusions.append("⚠️ No se puede calcular la inversa (det(A)=0).")
+        inversa = None
+        conclusions.append("❌ No se puede calcular la inversa (det(A)=0).")
 
-    return adjunta, steps, conclusions
+    return inversa, steps, conclusions

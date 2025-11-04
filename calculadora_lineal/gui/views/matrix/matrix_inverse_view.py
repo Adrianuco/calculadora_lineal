@@ -196,10 +196,26 @@ class MatrixInverseView(tk.Frame):
         if self.mode.get() == "Adjunta de una matriz":
             adj, steps, conclusions = adjunta_matrix(A, record_steps=True)
             for s in steps:
-                self.step_viewer.add_step(s["descripcion"], s["matriz"])
+                self.step_viewer.add_step_safe(s["descripcion"], s["matriz"])
 
-            texto = "Matriz Adjunta - Resultado Final:\n\n"
-            texto += f"Adj(A):\n{self._format_matrix_pretty(adj)}\n\n"
+            # Calcular propiedades adicionales usando RREF
+            I = [[Fraction(1 if i == j else 0) for j in range(len(A))] for i in range(len(A))]
+            A_aug = [A[i] + I[i] for i in range(len(A))]
+            A_rref_aug, _ = gauss_jordan(A_aug, record_steps=True)
+            left_rref = [row[:len(A)] for row in A_rref_aug]
+            piv_cols, rank = self._pivot_info(left_rref)
+
+            # Agregar conclusiones de propiedades
+            conclusions.append(f"A tiene {rank} posiciones pivote.")
+            if rank == len(A):
+                conclusions.append("La ecuación Ax = 0 tiene solamente la solución trivial.")
+                conclusions.append("Las columnas de A forman un conjunto linealmente independiente.")
+            else:
+                conclusions.append("La ecuación Ax = 0 tiene soluciones no triviales.")
+                conclusions.append("Las columnas de A NO son linealmente independientes.")
+
+            texto = "Resultado Final:\n\n"
+            texto += f"Matriz inversa A⁻¹:\n{self._format_matrix_pretty(adj)}\n\n"
             texto += "\n".join(conclusions)
             self._mostrar_result_text(texto)
             return
