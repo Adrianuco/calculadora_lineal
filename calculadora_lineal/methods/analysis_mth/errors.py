@@ -167,13 +167,13 @@ def error_absoluto_relativo(m: float, m_barra: float):
 
     resultados = {
         "Datos": f"m = {m}, m̄ = {m_barra}",
-        "Error Absoluto": f"{ea}",
-        "Error Relativo": f"{er} ({er_pct}%)",
+        "Error Absoluto": f"ea = |{m} - {m_barra}| = |{ea}| = {ea:,.6f}",
+        "Error Relativo": f"er = {ea}/{m} = {er:,.6f} ({er_pct:,.6f}%)",
     }
 
     interpretacion = (
-        f"El error absoluto ({ea}) indica cuánto difiere el valor aproximado.\n"
-        f"El error relativo ({er_pct}%) expresa la magnitud del error respecto al valor real."
+        f"El error absoluto ({ea:,.6f}) indica cuánto difiere el valor aproximado.\n"
+        f"El error relativo ({er_pct:,.6f}%) expresa la magnitud del error respecto al valor real."
     )
 
     return resultados, interpretacion
