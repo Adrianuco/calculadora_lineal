@@ -2,9 +2,7 @@ import numpy as np
 import sympy as sp
 import pandas as pd
 
-# ===============================
-# Notación Posicional
-# ===============================
+
 def truncar(valor, decimales=2):
     factor = 10 ** decimales
     return int(valor * factor) / factor
@@ -31,9 +29,6 @@ def notacion_posicional(numero: str, base: int = 10):
     sumatoria = " + ".join(partes) + f" = {suma_total}"
     return pasos, suma_total, sumatoria
 
-# ===============================
-# Conceptos de error
-# ===============================
 def conceptos_de_error():
     ejemplos = {}
     valor_real = np.pi
@@ -72,15 +67,12 @@ def conceptos_de_error():
 
     ejemplos["Error del Modelo Matemático"] = (
         "• Definición: Surge al simplificar fenómenos reales.\n"
-        "• Ejemplo: Péndulo simple θ'' + θ = 0, válido solo para ángulos pequeños.\n"
-        "• Explicación: La simplificación matemática introduce error inherente."
+        "• Ejemplo: La formula para calcular el tiempo que tarda un objeto en caer. d = ½ g t²\n Esto no toma en cuenta factores como resistencia del aire, variacion de g con la altura, rotacion de la tierra, etc.\n"
     )
 
     return ejemplos
 
-# ===============================
-# Ejemplos punto flotante
-# ===============================
+
 def ejemplos_punto_flotante():
     ejemplos = {}
     suma = 0.1 + 0.2
@@ -93,9 +85,7 @@ def ejemplos_punto_flotante():
     )
     return ejemplos
 
-# ===============================
-# Acumulación error truncamiento
-# ===============================
+
 def acumulacion_error_truncamiento(monto_inicial: float, iteraciones: int):
     if iteraciones < 1 or iteraciones > 50:
         raise ValueError("Número de iteraciones permitido: 1-50")
@@ -169,9 +159,7 @@ def acumulacion_error_truncamiento(monto_inicial: float, iteraciones: int):
 
     return tabla, detalles, tabla_texto
 
-# ===============================
-# Error absoluto y relativo
-# ===============================
+
 def error_absoluto_relativo(m: float, m_barra: float):
     ea = abs(m - m_barra)
     er = float("inf") if m == 0 else ea / abs(m)
@@ -190,9 +178,7 @@ def error_absoluto_relativo(m: float, m_barra: float):
 
     return resultados, interpretacion
 
-# ===============================
-# Propagación de errores
-# ===============================
+
 def propagacion_errores(funcion: str, x_val: float, delta_x: float):
     x = sp.Symbol("x")
     funcion_procesada = funcion.replace("^", "**")
@@ -236,9 +222,7 @@ def propagacion_errores(funcion: str, x_val: float, delta_x: float):
 
     return resultados, interpretacion
 
-# ===============================
-# Exportar Excel
-# ===============================
+
 def exportar_a_excel(tabla: list[dict], nombre_archivo: str = "resultado.xlsx"):
     df = pd.DataFrame(tabla)
     df.to_excel(nombre_archivo, index=False)
