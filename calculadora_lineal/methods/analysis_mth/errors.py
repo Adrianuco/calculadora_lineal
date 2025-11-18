@@ -1,178 +1,200 @@
-# calculadora_lineal/methods/analysis_mth/errors.py
 import numpy as np
 import sympy as sp
+import pandas as pd
+
+# ===============================
+# Notación Posicional
+# ===============================
+def truncar(valor, decimales=2):
+    factor = 10 ** decimales
+    return int(valor * factor) / factor
 
 def notacion_posicional(numero: str, base: int = 10):
     pasos = []
     numero_str = str(numero)
 
-    if base == 2 and len(numero_str) != 7:
-        raise ValueError("Para base 2 debes ingresar un número binario de 7 dígitos.")
-    if base == 10 and len(numero_str) != 5:
-        raise ValueError("Para base 10 debes ingresar un número de 5 dígitos.")
     if base == 2 and any(c not in "01" for c in numero_str):
         raise ValueError("El número contiene dígitos no permitidos para binario.")
 
     suma_total = 0
     potencia = len(numero_str) - 1
-    sumatoria_partes = []
+    partes = []
+
 
     for digito in numero_str:
         valor = int(digito) * (base ** potencia)
         pasos.append(f"{digito} × {base}^{potencia} = {valor}")
-        sumatoria_partes.append(f"({digito}×{base}^{potencia})")
+        partes.append(f"({digito}×{base}^{potencia})")
         suma_total += valor
         potencia -= 1
 
-    sumatoria = " + ".join(sumatoria_partes) + f" = {suma_total}"
-
+    sumatoria = " + ".join(partes) + f" = {suma_total}"
     return pasos, suma_total, sumatoria
 
-
+# ===============================
+# Conceptos de error
+# ===============================
 def conceptos_de_error():
     ejemplos = {}
-
     valor_real = np.pi
     valor_aprox = 3.14
-    ejemplos["Error inherente"] = (
-        "El error inherente proviene de datos de entrada imprecisos o aproximados.\n"
-        f"Ejemplo: π real = {valor_real}, aproximación = {valor_aprox}, "
-        f"error = {abs(valor_real - valor_aprox)}.\n"
-        "Explicación: cualquier medición o dato que no sea exacto ya introduce error."
-    )
-
-    ejemplos["Error de redondeo"] = (
-        "Ocurre al representar valores infinitos con precisión finita.\n"
-        f"Ejemplo: 1/3 = {1/3}, redondeado a 4 decimales = {round(1/3, 4)}, "
-        f"error = {abs((1/3) - round(1/3, 4))}.\n"
-        "Explicación: las computadoras no pueden almacenar infinitos decimales."
-    )
-
     x = 1
-    real = np.e
+    valor_real_e = np.e
     aprox_trunc = 1 + x + x**2 / 2
-    ejemplos["Error de truncamiento"] = (
-        "Aparece al cortar una serie o proceso antes de completarse.\n"
-        f"Aproximar e usando 1 + x + x²/2 = {aprox_trunc}, valor real = {real}, "
-        f"error = {abs(real - aprox_trunc)}.\n"
-        "Explicación: truncar reduce trabajo, pero acumula error."
+
+    ejemplos["Error Inherente"] = (
+        "• Definición: Es el error presente en los datos de entrada.\n"
+        f"• Ejemplo: π real = {valor_real}, aproximación = {valor_aprox}, "
+        f"error = {abs(valor_real - valor_aprox):.6f}\n"
+        "• Explicación: Los datos no son exactos desde el inicio."
     )
 
-    explic_concepto = (
-        "Overflow y Underflow:\n"
-        "Son errores producidos por límites de representación numérica.\n"
-        "Overflow → número demasiado grande.\n"
-        "Underflow → número demasiado pequeño."
+    ejemplos["Error de Redondeo"] = (
+        "• Definición: Se produce al limitar decimales en cálculos.\n"
+        f"• Ejemplo: 1/3 ≈ {round(1/3,4)}, error = {abs(1/3 - round(1/3,4)):.6f}\n"
+        "• Explicación: No todos los decimales infinitos se pueden representar."
     )
 
-    try:
-        overflow = np.exp(1000)
-    except OverflowError:
-        overflow = "Overflow (demasiado grande)"
-
-    ejemplos["Overflow"] = (
-        f"{explic_concepto}\n\nEjemplo Overflow:\n{overflow}\n"
-        "Explicación: exp(1000) excede la capacidad del sistema."
+    ejemplos["Error de Truncamiento"] = (
+        "• Definición: Surge al cortar un cálculo o serie antes de completarlo.\n"
+        f"• Ejemplo: Aproximación de e con 1+x+x²/2 = {aprox_trunc:.6f}, valor real = {valor_real_e:.6f}, "
+        f"error = {abs(valor_real_e - aprox_trunc):.6f}\n"
+        "• Explicación: La truncación reduce trabajo, pero acumula error."
     )
 
-    underflow = np.float32(1e-50)
-    ejemplos["Underflow"] = (
-        "Ejemplo Underflow:\n"
-        f"{underflow} (se aproxima a 0 por límites internos)\n"
-        "Explicación: el número es tan pequeño que se redondea a cero."
+    ejemplos["Overflow / Underflow"] = (
+        "• Definición: Errores por límites de representación numérica.\n"
+        "  - Overflow: número demasiado grande.\n"
+        "  - Underflow: número demasiado pequeño.\n"
+        "• Ejemplo Overflow: np.exp(1000) provoca Overflow.\n"
+        "• Ejemplo Underflow: np.float32(1e-50) ≈ 0."
     )
 
-    ejemplos["Error del modelo matemático"] = (
-        "Surge al simplificar fenómenos reales.\n"
-        "Ejemplo: un péndulo se modela como θ'' + θ = 0, válido solo para ángulos pequeños.\n"
-        "Explicación: si el ángulo es grande, las hipótesis no se cumplen."
+    ejemplos["Error del Modelo Matemático"] = (
+        "• Definición: Surge al simplificar fenómenos reales.\n"
+        "• Ejemplo: Péndulo simple θ'' + θ = 0, válido solo para ángulos pequeños.\n"
+        "• Explicación: La simplificación matemática introduce error inherente."
     )
 
     return ejemplos
 
-
+# ===============================
+# Ejemplos punto flotante
+# ===============================
 def ejemplos_punto_flotante():
     ejemplos = {}
-
-    ejemplos["0.1 + 0.2 == 0.3"] = (0.1 + 0.2 == 0.3)
-    ejemplos["0.1 + 0.2"] = 0.1 + 0.2
+    suma = 0.1 + 0.2
+    ejemplos["Comparación"] = "0.1 + 0.2 == 0.3"
+    ejemplos["Resultado"] = f"0.1 + 0.2 = {suma:.17f}"
     ejemplos["Explicación"] = (
-        "0.1 y 0.2 no tienen representación exacta en binario.\n"
-        "El error surge porque el sistema usa aproximaciones y al sumarlas "
-        "no coincide exactamente con 0.3."
+        "• 0.1 y 0.2 no tienen representación exacta en binario.\n"
+        "• La suma no coincide exactamente con 0.3.\n"
+        "• Esto demuestra el error de punto flotante en computadoras."
     )
-
     return ejemplos
 
-def acumulacion_error_truncamiento(montos: list[float], iteraciones: int):
-    if iteraciones > 50:
-        raise ValueError("El número máximo de iteraciones permitidas es 50.")
-    if len(montos) < iteraciones:
-        raise ValueError("La lista de montos no contiene suficientes valores.")
-    
+# ===============================
+# Acumulación error truncamiento
+# ===============================
+def acumulacion_error_truncamiento(monto_inicial: float, iteraciones: int):
+    if iteraciones < 1 or iteraciones > 50:
+        raise ValueError("Número de iteraciones permitido: 1-50")
+
     tasa = 0.0625
-    
     tabla = []
     detalles = []
     error_acum = 0.0
+    monto_ant = monto_inicial
+
+    # Cabecera de tabla formateada
+    header = (
+        f"{'Iteración':>10} | "
+        f"{'Monto anterior':>15} | "
+        f"{'Interés truncado':>17} | "
+        f"{'Interés real':>15} | "
+        f"{'Monto truncado':>15} | "
+        f"{'Monto real':>12} | "
+        f"{'Diferencia':>12} | "
+        f"{'Error acumulado':>17}"
+    )
+    sep = "-" * len(header)
+    tabla_texto = header + "\n" + sep + "\n"
 
     for i in range(1, iteraciones + 1):
-        monto_ant = montos[i - 1]
         interes_real = monto_ant * tasa
-        interes_trunc = float(f"{interes_real:.2f}")
         monto_real_nuevo = monto_ant + interes_real
-        monto_trunc_nuevo = float(f"{(monto_ant + interes_trunc):.2f}")
-        diferencia = monto_real_nuevo - monto_trunc_nuevo
-        diferencia = float(f"{diferencia:.4f}")
+        interes_trunc = truncar(interes_real, 2)
+        monto_trunc_nuevo = truncar(monto_ant + interes_trunc, 2)
+        diferencia = round(monto_real_nuevo - monto_trunc_nuevo, 6)
         error_acum += diferencia
-        error_acum = float(f"{error_acum:.4f}")
+        error_acum = round(error_acum, 6)
 
+        # Guardamos la fila en tabla
         tabla.append({
             "Iteración": i,
-            "Monto anterior": float(f"{monto_ant:.2f}"),
-            "Interés truncado": float(f"{interes_trunc:.2f}"),
-            "Interés real": float(f"{interes_real:.4f}"),
-            "Monto truncado": float(f"{monto_trunc_nuevo:.2f}"),
-            "Monto real": float(f"{monto_real_nuevo:.4f}"),
-            "Diferencia": float(f"{diferencia:.4f}"),
-            "Error acumulado": float(f"{error_acum:.4f}")
+            "Monto anterior": round(monto_ant, 2),
+            "Interés truncado": round(interes_trunc, 2),
+            "Interés real": round(interes_real, 6),
+            "Monto truncado": round(monto_trunc_nuevo, 2),
+            "Monto real": round(monto_real_nuevo, 6),
+            "Diferencia": diferencia,
+            "Error acumulado": error_acum
         })
 
-        texto = f"""
-Iteración {i}
-Monto anterior:  {monto_ant:,.2f}
-Interés real:  {monto_ant:,.2f} × {tasa} = {interes_real:,.4f}
-Interés truncado (2 dec.):  {interes_trunc:,.2f}
-Monto real nuevo: {monto_ant:,.2f} + {interes_real:,.4f} = {monto_real_nuevo:,.4f}
-Monto truncado nuevo: {monto_ant:,.2f} + {interes_trunc:,.2f} = {monto_trunc_nuevo:,.2f}
-Diferencia:  {monto_real_nuevo:,.6f} - {monto_trunc_nuevo:,.2f} = {diferencia:,.6f}
-Error acumulado: {error_acum:,.4f}
-"""
-        detalles.append(texto)
+        # Formateamos la fila para la tabla de texto
+        tabla_texto += (
+            f"{i:>10} | "
+            f"{monto_ant:>15,.2f} | "
+            f"{interes_trunc:>17,.2f} | "
+            f"{interes_real:>15,.6f} | "
+            f"{monto_trunc_nuevo:>15,.2f} | "
+            f"{monto_real_nuevo:>12,.6f} | "
+            f"{diferencia:>12,.6f} | "
+            f"{error_acum:>17,.6f}\n"
+        )
 
-    return tabla, detalles
+        # Detalle paso a paso
+        texto_detalle = (
+            f"Iteración {i}\n"
+            f"Monto anterior: {monto_ant:,.2f}\n"
+            f"Interés real: {monto_ant:,.2f} × {tasa} = {interes_real:,.6f}\n"
+            f"Interés truncado (2 dec.): {interes_trunc:,.2f}\n"
+            f"Monto real nuevo: {monto_ant:,.2f} + {interes_real:,.6f} = {monto_real_nuevo:,.6f}\n"
+            f"Monto truncado nuevo: {monto_ant:,.2f} + {interes_trunc:,.2f} = {monto_trunc_nuevo:,.2f}\n"
+            f"Diferencia: {diferencia:,.6f}\n"
+            f"Error acumulado: {error_acum:,.6f}\n"
+        )
+        detalles.append(texto_detalle)
+        monto_ant = monto_trunc_nuevo
 
+    return tabla, detalles, tabla_texto
+
+# ===============================
+# Error absoluto y relativo
+# ===============================
 def error_absoluto_relativo(m: float, m_barra: float):
     ea = abs(m - m_barra)
-    er = float("inf") if m == 0 else ea / m
-    er_porcentaje = er * 100
+    er = float("inf") if m == 0 else ea / abs(m)
+    er_pct = er * 100
 
     resultados = {
         "Datos": f"m = {m}, m̄ = {m_barra}",
-        "Error Absoluto": f"ea = |{m} - {m_barra}| = {ea}",
-        "Error Relativo": f"er = {ea} / |{m}| = {er} ({er_porcentaje}%)"
+        "Error Absoluto": f"{ea}",
+        "Error Relativo": f"{er} ({er_pct}%)",
     }
 
     interpretacion = (
-        f"El valor aproximado difiere {ea} unidades del real, "
-        f"equivalente a {er_porcentaje}% respecto a {m}."
+        f"El error absoluto ({ea}) indica cuánto difiere el valor aproximado.\n"
+        f"El error relativo ({er_pct}%) expresa la magnitud del error respecto al valor real."
     )
 
     return resultados, interpretacion
 
+# ===============================
+# Propagación de errores
+# ===============================
 def propagacion_errores(funcion: str, x_val: float, delta_x: float):
     x = sp.Symbol("x")
-
     funcion_procesada = funcion.replace("^", "**")
 
     try:
@@ -186,9 +208,17 @@ def propagacion_errores(funcion: str, x_val: float, delta_x: float):
     f_x_dx = float(f.evalf(subs={x: x_val + delta_x}))
     f_der_x = float(f_der.evalf(subs={x: x_val}))
 
-    delta_y_aprox = round(f_der_x * delta_x, 4)
-    delta_y_real = round(f_x_dx - f_x, 4)
-    error_abs = round(abs(delta_y_real - delta_y_aprox), 4)
+    delta_y_aprox = f_der_x * delta_x
+    delta_y_real = f_x_dx - f_x
+    error_abs = abs(delta_y_real - delta_y_aprox)
+
+    # Formateo para evitar notación científica
+    f_x_str = f"{f_x:.9f}"
+    f_x_dx_str = f"{f_x_dx:.9f}"
+    f_der_x_str = f"{f_der_x:.9f}"
+    delta_y_aprox_str = f"{delta_y_aprox:.6f}"
+    delta_y_real_str = f"{delta_y_real:.6f}"
+    error_abs_str = f"{error_abs:.6f}"
 
     derivada_str = str(f_der).replace("**", "^")
 
@@ -196,18 +226,20 @@ def propagacion_errores(funcion: str, x_val: float, delta_x: float):
         "Función": f"f(x) = {funcion}",
         "Datos": f"x = {x_val}, Δx = {delta_x}",
         "Derivada": f"f'(x) = {derivada_str}",
-        "Derivada en x": f"f'({x_val}) = {round(f_der_x, 4)}",
-        "Aproximación lineal": f"Δy ≈ f'({x_val}) * {delta_x} = {delta_y_aprox}",
-        "Cálculo exacto": (
-            f"f({x_val + delta_x}) − f({x_val}) = "
-            f"{round(f_x_dx, 4)} − {round(f_x, 4)} = {delta_y_real}"
-        ),
-        "Error absoluto": f"|{delta_y_real} − {delta_y_aprox}| = {error_abs}"
+        "Derivada en x": f"f'({x_val}) = {f_der_x_str}",
+        "Aproximación lineal": f"Δy ≈ f'({x_val}) * {delta_x} = {delta_y_aprox_str}",
+        "Cálculo exacto": f"f({x_val + delta_x}) − f({x_val}) = {f_x_dx_str} − {f_x_str} = {delta_y_real_str}",
+        "Error absoluto": f"|{delta_y_real_str} − {delta_y_aprox_str}| = {error_abs_str}"
     }
 
-    interpretacion = (
-        f"El error absoluto = {error_abs:.4f} muestra la diferencia entre "
-        f"la aproximación lineal y el cambio real de la función."
-    )
+    interpretacion = f"El error absoluto = {error_abs_str} muestra la diferencia entre aproximación lineal y cambio real."
 
     return resultados, interpretacion
+
+# ===============================
+# Exportar Excel
+# ===============================
+def exportar_a_excel(tabla: list[dict], nombre_archivo: str = "resultado.xlsx"):
+    df = pd.DataFrame(tabla)
+    df.to_excel(nombre_archivo, index=False)
+    return f"Archivo guardado como {nombre_archivo}"

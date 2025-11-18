@@ -1,6 +1,7 @@
 # calculadora_lineal/methods/matrix_mth/determinant.py
 from fractions import Fraction
 from copy import deepcopy
+from random import random, randint
 
 def to_fraction(x):
     if isinstance(x, Fraction):
@@ -283,7 +284,7 @@ def verificar_propiedades(A, det):
     if n >= 2:
         texto.append("5.  Propiedad multiplicativa → det(AB) = det(A) × det(B)\n")
 
-        I = [[Fraction(1 if i == j else 0) for j in range(n)] for i in range(n)]
+        I = [[Fraction(randint(1, 4)) for j in range(n)] for i in range(n)]
         prod = [[sum(A[i][k] * I[k][j] for k in range(n)) for j in range(n)] for i in range(n)]
         det_prod = determinante_cofactores(prod)["resultado"]
         detI = determinante_cofactores(I)["resultado"]
