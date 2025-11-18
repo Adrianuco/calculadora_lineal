@@ -8,6 +8,7 @@ from PIL import Image, ImageTk
 # Importamos los menús principales de matrices y vectores
 from .views.matrix.matrix_menu import MatrixMenu
 from .views.vectors.vector_menu import VectorMenu
+from .views.analysis.analysis_menu import AnalysisMenu
 from .views.matrix.matrices_view import MatricesView
 from .views.vectors.dependency_view import DependenciaView
 
@@ -142,6 +143,8 @@ class AlgebraApp(tk.Tk):
             self.show_matrices()
         elif name == "Vectores":
             self.show_vectores()
+        elif name == "Análisis Numérico":
+            self.show_anaylisis()
         else:
             self.show_placeholder(name)
 
@@ -236,6 +239,19 @@ class AlgebraApp(tk.Tk):
             widget.destroy()
         from .views.matrix.determinant_view import DeterminantView
         frame = DeterminantView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_anaylisis(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        frame = AnalysisMenu(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_errors_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.analysis.errors_view import ErrorsView
+        frame = ErrorsView(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_placeholder(self, name):
