@@ -160,20 +160,20 @@ def acumulacion_error_truncamiento(monto_inicial: float, iteraciones: int):
     return tabla, detalles, tabla_texto
 
 
-def error_absoluto_relativo(m: float, m_barra: float):
-    ea = abs(m - m_barra)
-    er = float("inf") if m == 0 else ea / abs(m)
-    er_pct = er * 100
+def error_absoluto_relativo(ValorReal: float, ValorAproximado: float):
+    Ea = abs(ValorReal - ValorAproximado)
+    Er = float("inf") if ValorReal == 0 else Ea / abs(ValorReal)
+    Er_pct = Er * 100
 
     resultados = {
-        "Datos": f"m = {m}, m̄ = {m_barra}",
-        "Error Absoluto": f"ea = |{m} - {m_barra}| = |{ea}| = {ea}",
-        "Error Relativo": f"er = {ea}/{m} = {er} ({er_pct}%)",
+        "Datos": f"Valor real = {ValorReal}, Valor aproximado = {ValorAproximado}",
+        "Error Absoluto": f"Ea = |{ValorReal} - {ValorAproximado}| = |{Ea}| = {Ea}",
+        "Error Relativo": f"Er = {Ea}/{ValorReal} = {Er} ({Er_pct}%)",
     }
 
     interpretacion = (
-        f"El error absoluto ({ea}) indica cuánto difiere el valor aproximado.\n"
-        f"El error relativo ({er_pct}%) expresa la magnitud del error respecto al valor real."
+        f"El error absoluto ({Ea}) indica cuánto difiere el valor aproximado.\n"
+        f"El error relativo ({Er_pct}%) expresa la magnitud del error respecto al valor real."
     )
 
     return resultados, interpretacion

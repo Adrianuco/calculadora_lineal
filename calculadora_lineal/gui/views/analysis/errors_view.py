@@ -119,8 +119,8 @@ class ErrorsView(tk.Frame):
             self.input_fields["iteraciones"] = self._add_input("Iteraciones:")
 
         elif metodo == "Error Absoluto y Relativo":
-            self.input_fields["m"] = self._add_input("Valor real m:")
-            self.input_fields["m_barra"] = self._add_input("Valor aproximado m̄:")
+            self.input_fields["Valor real"] = self._add_input("Valor Real:")
+            self.input_fields["Valor aproximado"] = self._add_input("Valor Aproximado:")
 
         elif metodo == "Propagación de Errores":
             self.input_fields["funcion"] = self._add_input("Función:")
@@ -190,9 +190,9 @@ class ErrorsView(tk.Frame):
                 text += "\nDetalles:\n" + "\n".join(detalles)
 
             elif metodo == "Error Absoluto y Relativo":
-                m = float(self.input_fields["m"].get())
-                m_barra = float(self.input_fields["m_barra"].get())
-                res, interp = error_absoluto_relativo(m, m_barra)
+                ValorReal = float(self.input_fields["Valor real"].get())
+                ValorAproximado = float(self.input_fields["Valor aproximado"].get())
+                res, interp = error_absoluto_relativo(ValorReal, ValorAproximado)
                 text = "Error absoluto y relativo\n\n"
                 for k, v in res.items():
                     text += f"{k}: {v}\n"
