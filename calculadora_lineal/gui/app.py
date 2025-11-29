@@ -254,6 +254,13 @@ class AlgebraApp(tk.Tk):
         frame = ErrorsView(self.container, self)
         frame.pack(expand=True, fill="both")
 
+    def show_bisection_false_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.analysis.bisection_false_view import BisectionFalseView
+        frame = BisectionFalseView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
     def show_placeholder(self, name):
         frame = tk.Frame(self.container, bg=COLORS["bg"])
         frame.pack(expand=True, fill="both")

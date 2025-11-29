@@ -26,3 +26,14 @@ class AnalysisMenu(tk.Frame):
             command=lambda: self.controller.show_errors_view()
         )
         btn_errors.pack(pady=10, ipadx=10, ipady=5)
+
+        btn_bisection_false = tk.Button(
+            self,
+            text="Bisección y Falsa Posición",
+            font=FONTS["normal"],
+            bg=COLORS["accent"],
+            fg="white",
+            relief="flat",
+            command=lambda: self.controller.show_bisection_false_view()
+        )
+        btn_bisection_false.pack(pady=10, ipadx=10, ipady=5)
