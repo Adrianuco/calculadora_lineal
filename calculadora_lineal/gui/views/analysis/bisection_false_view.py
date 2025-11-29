@@ -32,9 +32,6 @@ class BisectionFalseView(tk.Frame):
 
         self._build_ui()
 
-    # ===============================================================
-    # UI
-    # ===============================================================
     def _build_ui(self):
         top = tk.Frame(self, bg=COLORS["panel"])
         top.pack(fill="x", padx=12, pady=12)
@@ -99,7 +96,6 @@ class BisectionFalseView(tk.Frame):
         self.inputs_frame = tk.Frame(self, bg=COLORS["bg"])
         self.inputs_frame.pack(fill="x", padx=12, pady=12)
 
-    # ===============================================================
     def _on_method_change(self, event=None):
         self._clear_inputs()
         self._mostrar("")
@@ -111,7 +107,6 @@ class BisectionFalseView(tk.Frame):
         self.current_inputs.clear()
         self.input_fields.clear()
 
-    # ===============================================================
     def _add_input(self, label, default=""):
         frame = tk.Frame(self.inputs_frame, bg=COLORS["bg"])
         frame.pack(anchor="w", pady=2)
@@ -127,7 +122,6 @@ class BisectionFalseView(tk.Frame):
         self.input_fields[label] = ent
         return ent
 
-    # ===============================================================
     def _generar_inputs(self):
         self._clear_inputs()
 
@@ -144,7 +138,6 @@ class BisectionFalseView(tk.Frame):
             "Error deseado:", "0.001"
         )
 
-    # ===============================================================
     def _calcular(self):
         metodo = self.selected_method.get()
         self._mostrar("")
@@ -178,7 +171,6 @@ class BisectionFalseView(tk.Frame):
         except Exception as e:
             messagebox.showerror("Error inesperado", str(e))
 
-    # ===============================================================
     def _formato_tabla(self, tabla, metodo):
         # ENCABEZADO
         if metodo == "Bisección":
@@ -223,14 +215,12 @@ class BisectionFalseView(tk.Frame):
 
         return texto
 
-    # ===============================================================
     def _mostrar(self, text):
         self.txt_result.configure(state="normal")
         self.txt_result.delete("1.0", "end")
         self.txt_result.insert("1.0", text)
         self.txt_result.configure(state="disabled")
 
-    # ===============================================================
     def _exportar_excel(self):
         try:
             if not self.tabla_resultado:
