@@ -5,6 +5,7 @@ from ...theme import COLORS, FONTS
 from ....methods.analysis_mth.newtonraphson_secant import (
     newton_clasico,
     newton_subintervalos,
+    secante,
     exportar_a_excel_newton
 )
 import re
@@ -45,7 +46,7 @@ class NewtonRaphsonSecantView(tk.Frame):
         self.combo = ttk.Combobox(
             top,
             textvariable=self.selected_method,
-            values=["Newton Clásico", "Newton por Subintervalos"],
+            values=["Newton Clásico", "Newton por Subintervalos", "Método de la Secante"],
             state="readonly",
             width=30
         )
@@ -139,6 +140,9 @@ class NewtonRaphsonSecantView(tk.Frame):
             self._add_input("Límite superior b:")
             self._add_input("Subintervalos n:")
 
+        if metodo == "Método de la Secante":
+            self._add_input("x₋₁ (valor previo):")
+
     def _calcular(self):
         metodo = self.selected_method.get()
         self._mostrar("")
@@ -165,6 +169,11 @@ class NewtonRaphsonSecantView(tk.Frame):
             if metodo == "Newton Clásico":
                 tabla, iters, proceso = newton_clasico(funcion, x0, error)
 
+            elif metodo == "Método de la Secante":
+                xm1 = float(self.input_fields["x₋₁ (valor previo):"].get())
+
+                tabla, iters, proceso = secante(funcion, xm1, x0, error)
+
             else:
                 a = float(self.input_fields["Límite inferior a:"].get())
                 b = float(self.input_fields["Límite superior b:"].get())
@@ -188,6 +197,29 @@ class NewtonRaphsonSecantView(tk.Frame):
             messagebox.showerror("Error inesperado", str(e))
 
     def _formato_tabla(self, tabla):
+        es_secante = ("xi-1" in tabla[0]) and ("f(xi-1)" in tabla[0])
+
+        if es_secante:
+            header = (
+                f"{'Iteración':>10} | {'xi-1':>12} | {'xi':>12} | "
+                f"{'f(xi-1)':>12} | {'f(xi)':>12} | {'xi+1':>12} | {'Ea':>12}\n"
+            )
+            sep = "-" * len(header)
+            txt = header + sep + "\n"
+
+            for fila in tabla:
+                txt += (
+                    f"{fila['Iteración']:>10} | "
+                    f"{fmt(fila['xi-1']):>12} | "
+                    f"{fmt(fila['xi']):>12} | "
+                    f"{fmt(fila['f(xi-1)']):>12} | "
+                    f"{fmt(fila['f(xi)']):>12} | "
+                    f"{fmt(fila['xi+1']):>12} | "
+                    f"{fmt(fila['Ea']):>12}\n"
+                )
+
+            return txt
+
         header = (
             f"{'Iteración':>10} | {'xi':>12} | {'xi+1':>12} | "
             f"{'Ea':>12} | {'f(xi)':>12} | {'f\'(xi)':>12}\n"
@@ -222,7 +254,7 @@ class NewtonRaphsonSecantView(tk.Frame):
                 )
                 return
 
-            filename = "resultados_newton_raphson.xlsx"
+            filename = "resultadosnewtonraphson_secant.xlsx"
             exportar_a_excel_newton(self.tabla_resultado, filename)
 
             messagebox.showinfo(

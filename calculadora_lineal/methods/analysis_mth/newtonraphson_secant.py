@@ -169,6 +169,77 @@ def newton_subintervalos(funcion: str, a: float, b: float, n: int,
 
     return tabla, iteracion, proceso
 
+def secante(funcion: str, xm1: float, x0: float, tol: float):
+    """
+    Método de la Secante
+    xm1 = x_{i-1}
+    x0  = x_i
+    """
+
+    MAX_ITER = 100
+
+    f, _, f_sym = _parse_function(funcion)
+
+    tabla = []
+    proceso = ""
+    proceso += "Método de la Secante\n"
+    proceso += f"Función: f(x) = {f_sym}\n"
+    proceso += f"x₋₁ = {xm1}\n"
+    proceso += f"x₀ = {x0}\n"
+    proceso += f"Tolerancia: {tol}\n\n"
+
+    xi_1 = xm1
+    xi = x0
+
+    iteracion = 1
+
+    while iteracion <= MAX_ITER:
+        fxi = f(xi)
+        fxi_1 = f(xi_1)
+
+        if fxi == fxi_1:
+            raise ValueError("f(xi) y f(xi-1) son iguales. División por cero.")
+
+        xi1 = xi - fxi * (xi - xi_1) / (fxi - fxi_1)
+        Ea = abs(xi1 - xi)
+
+        tabla.append({
+            "Iteración": f"{iteracion} (i = {iteracion - 1})",
+            "xi-1": round(xi_1, 6),
+            "xi": round(xi, 6),
+            "f(xi-1)": round(fxi_1, 6),
+            "f(xi)": round(fxi, 6),
+            "xi+1": round(xi1, 6),
+            "Ea": round(Ea, 6)
+        })
+
+        proceso += f"\n\nIteración {iteracion} (i = {iteracion-1})\n"
+        proceso += f"f(x_{iteracion}) = {fxi:.6f}\n"
+        proceso += f"f(x_{iteracion-1}) = {fxi_1:.6f}\n\n"
+        proceso += "xi+1 = xi - f(xi)(xi-1 - xi) / (f(xi-1) - f(xi))\n"
+        proceso += (
+            f"xi+1 = {xi:.6f} - ({fxi:.6f}({xi_1:.6f} - {xi:.6f}) / "
+            f"({fxi_1:.6f} - {fxi:.6f}))\n"
+        )
+        proceso += f"xi+1 = {xi1:.6f}\n\n"
+        proceso += f"Ea = |{xi1:.6f} - {xi:.6f}| = {Ea:.6f}\n"
+
+        if Ea < tol:
+            valor_final = f(xi1)
+            proceso += f"\n\nEl método alcanzó la tolerancia {tol} en la iteración {iteracion}\n"
+            proceso += f"La raíz aproximada es: x ≈ {xi1:.6f}\n"
+            proceso += f"f(x_final) = {valor_final:.6e}"
+            break
+
+        xi_1 = xi
+        xi = xi1
+        iteracion += 1
+
+    if iteracion > MAX_ITER:
+        raise RuntimeError("Se alcanzó el máximo de iteraciones sin convergencia.")
+
+    return tabla, iteracion, proceso
+
 def graficar_funcion(funcion_str, xmin=-10, xmax=10):
     f, _, f_sym = _parse_function(funcion_str)
     
@@ -185,7 +256,7 @@ def graficar_funcion(funcion_str, xmin=-10, xmax=10):
     plt.ylabel("f(x)")
     plt.show()
 
-def exportar_a_excel_newton(tabla, nombre_archivo="resultados_newton_raphson.xlsx"): 
+def exportar_a_excel_newton(tabla, nombre_archivo="resultadosnewtonraphson_secant.xlsx"): 
     df = pd.DataFrame(tabla) 
     df.to_excel(nombre_archivo, index=False) 
     return f"Archivo guardado como {nombre_archivo}"
