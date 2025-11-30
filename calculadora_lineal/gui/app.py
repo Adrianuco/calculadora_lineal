@@ -254,6 +254,13 @@ class AlgebraApp(tk.Tk):
         frame = ErrorsView(self.container, self)
         frame.pack(expand=True, fill="both")
 
+    def show_newtonraphson_secant_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.analysis.newtonraphson_secant_view import NewtonRaphsonSecantView
+        frame = NewtonRaphsonSecantView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
     def show_bisection_false_view(self):
         for widget in self.container.winfo_children():
             widget.destroy()

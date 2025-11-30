@@ -1,11 +1,11 @@
-# calculadora_lineal/gui/views/analysis/bisection_false_view.py
+# calculadora_lineal/gui/views/analysis/newtonraphson_secant_view.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ...theme import COLORS, FONTS
-from ....methods.analysis_mth.bisection_false import (
-    biseccion,
-    falsa_posicion,
-    exportar_a_excel
+from ....methods.analysis_mth.newtonraphson_secant import (
+    newton_clasico,
+    newton_subintervalos,
+    exportar_a_excel_newton
 )
 import re
 
@@ -18,15 +18,14 @@ def fmt(x):
     except:
         return str(x)
 
-class BisectionFalseView(tk.Frame):
-
+class NewtonRaphsonSecantView(tk.Frame):
     def __init__(self, master, controller=None, *args, **kwargs):
         super().__init__(master, bg=COLORS["bg"], *args, **kwargs)
         self.controller = controller
 
         self.current_inputs = []
         self.input_fields = {}
-        self.selected_method = tk.StringVar(value="Bisección")
+        self.selected_method = tk.StringVar(value="Newton Clásico")
 
         self.tabla_resultado = None
         self.proceso_iter = ""
@@ -37,16 +36,18 @@ class BisectionFalseView(tk.Frame):
         top = tk.Frame(self, bg=COLORS["panel"])
         top.pack(fill="x", padx=12, pady=12)
 
-        tk.Label(top, text="Métodos:",
-                 bg=COLORS["panel"], fg=COLORS["text"],
-                 font=FONTS["normal"]).pack(side="left")
+        tk.Label(
+            top, text="Método:",
+            bg=COLORS["panel"], fg=COLORS["text"],
+            font=FONTS["normal"]
+        ).pack(side="left")
 
         self.combo = ttk.Combobox(
             top,
             textvariable=self.selected_method,
-            values=["Bisección", "Falsa Posición"],
+            values=["Newton Clásico", "Newton por Subintervalos"],
             state="readonly",
-            width=25
+            width=30
         )
         self.combo.pack(side="left", padx=10)
         self.combo.bind("<<ComboboxSelected>>", self._on_method_change)
@@ -72,7 +73,6 @@ class BisectionFalseView(tk.Frame):
             command=self._exportar_excel
         ).pack(side="left", padx=10)
 
-        # Panel resultados
         self.result_panel = tk.Frame(self, bg=COLORS["card"])
         self.result_panel.pack(fill="both", expand=True, padx=12, pady=(0, 8))
 
@@ -88,12 +88,11 @@ class BisectionFalseView(tk.Frame):
         )
         self.txt_result.pack(side="left", fill="both", expand=True, padx=8, pady=8)
         self.txt_result.bind("<Key>", lambda e: "break")
-        self.txt_result.bind("<Button-1>", lambda e: None)
+        self.txt_result.bind("<Button-1>", lambda e: "break")
 
-
-        scroll_r = tk.Scrollbar(self.result_panel, command=self.txt_result.yview)
-        self.txt_result.configure(yscrollcommand=scroll_r.set)
-        scroll_r.pack(side="right", fill="y")
+        scroll = tk.Scrollbar(self.result_panel, command=self.txt_result.yview)
+        self.txt_result.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
 
         self.inputs_frame = tk.Frame(self, bg=COLORS["bg"])
         self.inputs_frame.pack(fill="x", padx=12, pady=12)
@@ -112,48 +111,48 @@ class BisectionFalseView(tk.Frame):
     def _add_input(self, label, default=""):
         frame = tk.Frame(self.inputs_frame, bg=COLORS["bg"])
         frame.pack(anchor="w", pady=2)
+
         tk.Label(
             frame, text=label,
             bg=COLORS["bg"], fg=COLORS["text"],
             font=FONTS["normal"]
         ).pack(side="left", padx=6)
+
         ent = tk.Entry(frame, width=25)
         ent.pack(side="left")
         ent.insert(0, default)
+
         self.current_inputs.append(frame)
         self.input_fields[label] = ent
         return ent
 
     def _generar_inputs(self):
         self._clear_inputs()
+        metodo = self.selected_method.get()
 
-        self.input_fields["funcion"] = self._add_input(
-            "Función f(x):", ""
-        )
-        self.input_fields["xl"] = self._add_input(
-            "Límite inferior xl (xi):", ""
-        )
-        self.input_fields["xu"] = self._add_input(
-            "Límite superior xu:", ""
-        )
-        self.input_fields["error"] = self._add_input(
-            "Error deseado:", ""
-        )
+        self._add_input("Función f(x):")
+        self._add_input("x₀ (punto inicial):")
+        self._add_input("Error deseado:")
+
+        if metodo == "Newton por Subintervalos":
+            self._add_input("Límite inferior a:")
+            self._add_input("Límite superior b:")
+            self._add_input("Subintervalos n:")
 
     def _calcular(self):
         metodo = self.selected_method.get()
         self._mostrar("")
         self.tabla_resultado = None
-        self.proceso_iter = ""
 
         try:
-            funcion = self.input_fields["funcion"].get()
-            xl = float(self.input_fields["xl"].get())
-            xu = float(self.input_fields["xu"].get())
-            
-            import re
+            funcion = self.input_fields["Función f(x):"].get()
 
-            err_str = self.input_fields["error"].get().replace(" ", "")
+            x0 = float(self.input_fields["x₀ (punto inicial):"].get())
+
+            err_str = (
+                self.input_fields["Error deseado:"]
+                .get().replace(" ", "")
+            )
 
             err_str = re.sub(r"10\^(-?\d+)", lambda m: str(10 ** int(m.group(1))), err_str)
             err_str = err_str.replace("^", "**")
@@ -161,95 +160,74 @@ class BisectionFalseView(tk.Frame):
             try:
                 error = float(eval(err_str))
             except:
-                raise ValueError("Error inválido. Intente algo como 0.0001 o 10^-4.")
+                raise ValueError("Error inválido. Ejemplo: 0.0001 o 10^-4")
 
-            if xl >= xu:
-                raise ValueError("xl debe ser menor que xu")
+            if metodo == "Newton Clásico":
+                tabla, iters, proceso = newton_clasico(funcion, x0, error)
 
-            if metodo == "Bisección":
-                tabla, iter_needed, proceso = biseccion(funcion, xl, xu, error)
             else:
-                tabla, iter_needed, proceso = falsa_posicion(funcion, xl, xu, error)
+                a = float(self.input_fields["Límite inferior a:"].get())
+                b = float(self.input_fields["Límite superior b:"].get())
+                n = int(self.input_fields["Subintervalos n:"].get())
+
+                if n <= 0:
+                    raise ValueError("n debe ser mayor que 0")
+
+                tabla, iters, proceso = newton_subintervalos(
+                    funcion, a, b, n, x0, error
+                )
 
             self.tabla_resultado = tabla
 
-            # TABLA
-            texto_tabla = self._formato_tabla(tabla, metodo)
-
-            # FINAL
+            texto_tabla = self._formato_tabla(tabla)
             self._mostrar(texto_tabla + "\n\n" + proceso)
 
         except ValueError as e:
-            messagebox.showerror("Error de validación", str(e))
+            messagebox.showerror("Error en los datos", str(e))
         except Exception as e:
             messagebox.showerror("Error inesperado", str(e))
 
-    def _formato_tabla(self, tabla, metodo):
-        # ENCABEZADO
-        if metodo == "Bisección":
-            header = (
-                f"{'Iteración':>10} | {'xl':>10} | {'xu':>10} | {'xr':>10} | "
-                f"{'Ea':>10} | {'vl':>12} | {'vu':>12} | {'vr':>12} | {'xu - xl < E':>12}\n"
-            )
-        else:
-            header = (
-                f"{'Iteración':>10} | {'xl':>10} | {'xu':>10} | {'xr':>10} | "
-                f"{'Ea':>10} | {'vl':>12} | {'vu':>12} | {'vr':>12} | {'E < Ea':>8}\n"
-            )
-
+    def _formato_tabla(self, tabla):
+        header = (
+            f"{'Iteración':>10} | {'xi':>12} | {'xi+1':>12} | "
+            f"{'Ea':>12} | {'f(xi)':>12} | {'f\'(xi)':>12}\n"
+        )
         sep = "-" * len(header)
-        texto = header + sep + "\n"
+        txt = header + sep + "\n"
 
         for fila in tabla:
-            if metodo == "Bisección":
-                texto += (
-                    f"{fila['Iteración']:>10} | "
-                    f"{fmt(fila['xl']):>10} | "
-                    f"{fmt(fila['xu']):>10} | "
-                    f"{fmt(fila['xr']):>10} | "
-                    f"{fmt(fila['Ea']):>10} | "
-                    f"{fmt(fila['vl']):>12} | "
-                    f"{fmt(fila['vu']):>12} | "
-                    f"{fmt(fila['vr']):>12} | "
-                    f"{fmt(fila['xu-xl<E']):>12}\n"
-                )
-            else:
-                texto += (
-                    f"{fila['Iteración']:>10} | "
-                    f"{fmt(fila['xl']):>10} | "
-                    f"{fmt(fila['xu']):>10} | "
-                    f"{fmt(fila['xr']):>10} | "
-                    f"{fmt(fila['Ea']):>10} | "
-                    f"{fmt(fila['vl']):>12} | "
-                    f"{fmt(fila['vu']):>12} | "
-                    f"{fmt(fila['vr']):>12} | "
-                    f"{str(fila['E<Ea']):>8}\n"
-                )
+            txt += (
+                f"{fila['Iteración']:>10} | "
+                f"{fmt(fila['xi']):>12} | "
+                f"{fmt(fila['xi+1']):>12} | "
+                f"{fmt(fila['Ea']):>12} | "
+                f"{fmt(fila['f(xi)']):>12} | "
+                f"{fmt(fila['f\'(xi)']):>12}\n"
+            )
 
-        return texto
+        return txt
 
-    def _mostrar(self, text):
+    def _mostrar(self, texto):
         self.txt_result.configure(state="normal")
         self.txt_result.delete("1.0", "end")
-        self.txt_result.insert("1.0", text)
+        self.txt_result.insert("1.0", texto)
         self.txt_result.configure(state="disabled")
 
     def _exportar_excel(self):
         try:
             if not self.tabla_resultado:
                 messagebox.showwarning(
-                    "Primero calcule",
-                    "Debe calcular antes de exportar a Excel."
+                    "Sin datos",
+                    "Debe calcular antes de exportar."
                 )
                 return
 
-            filename = "bisection_false_resultados.xlsx"
-            exportar_a_excel(self.tabla_resultado, filename)
+            filename = "resultados_newton_raphson.xlsx"
+            exportar_a_excel_newton(self.tabla_resultado, filename)
 
             messagebox.showinfo(
-                "Exportación exitosa",
+                "Éxito",
                 f"Archivo generado: {filename}"
             )
-
         except Exception as e:
             messagebox.showerror("Error", str(e))
