@@ -145,6 +145,10 @@ class AlgebraApp(tk.Tk):
             self.show_vectores()
         elif name == "Análisis Numérico":
             self.show_anaylisis()
+        elif name == "Ajustes":
+            self.show_settings_view()
+        elif name == "Ayuda":
+            self.show_help_view()
         else:
             self.show_placeholder(name)
 
@@ -157,18 +161,22 @@ class AlgebraApp(tk.Tk):
             text="Bienvenido a la Calculadora de Álgebra Lineal",
             font=FONTS["title"],
             fg=COLORS["text"],
-            bg=COLORS["bg"],
+            bg=COLORS["bg"]
         )
         lbl.pack(pady=20)
 
-        sub = tk.Label(
-            frame,
-            text="(Placeholder para logo e info básica)",
-            font=FONTS["normal"],
-            fg=COLORS["accent"],
-            bg=COLORS["bg"],
-        )
-        sub.pack()
+        current_dir = os.path.dirname(__file__)
+        image_path = os.path.join(current_dir, "assets", "logo", "logo.png")
+        image_path = os.path.normpath(image_path)
+
+        img = Image.open(image_path).convert("RGBA")
+        img = img.resize((690, 215), Image.LANCZOS)
+        img_tk = ImageTk.PhotoImage(img)
+
+        self.logo_img = img_tk
+
+        logo_label = tk.Label(frame, image=self.logo_img, bg=COLORS["bg"])
+        logo_label.pack(pady=10)
 
     def show_matrices(self):
         # Limpiar contenido
@@ -266,6 +274,20 @@ class AlgebraApp(tk.Tk):
             widget.destroy()
         from .views.analysis.bisection_false_view import BisectionFalseView
         frame = BisectionFalseView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_settings_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.settings.settings import SettingsView
+        frame = SettingsView(self.container, self)
+        frame.pack(expand=True, fill="both")
+
+    def show_help_view(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        from .views.help.help import HelpView
+        frame = HelpView(self.container, self)
         frame.pack(expand=True, fill="both")
 
     def show_placeholder(self, name):

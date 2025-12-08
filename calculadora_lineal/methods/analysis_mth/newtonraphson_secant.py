@@ -33,14 +33,14 @@ def _parse_function(func_str: str):
 
     return f, df, f_sym
 
-
 def super_potencias(expr: str):
     mapa = str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻")
     import re
-    def repl(m):
-        return m.group(1).translate(mapa)
-    return re.sub(r"\*\*(\-?\d+)", lambda m: repl(m), expr)
-
+    def reemplazo(m):
+        pot = m.group(1)
+        return pot.translate(mapa)
+    expr = re.sub(r"\*\*(\-?\d+)", lambda m: reemplazo(m), expr)
+    return expr
 
 def newton_clasico(funcion: str, x0: float, tol: float):
 
@@ -51,7 +51,7 @@ def newton_clasico(funcion: str, x0: float, tol: float):
     tabla = []
     proceso = ""
     proceso += "Método Newton-Raphson (Clásico)\n"
-    proceso += f"Función: f(x) = {f_sym}\n"
+    proceso += f"Función original: f(x) = {super_potencias(str(f_sym))}\n"
     proceso += f"Punto inicial: x0 = {x0}\n"
     proceso += f"Tolerancia: {tol}\n\n"
 
@@ -78,9 +78,26 @@ def newton_clasico(funcion: str, x0: float, tol: float):
         })
 
         proceso += f"\n\nIteración {iteracion} (i = {iteracion-1})\n\n"
-        proceso += f"f(x{iteracion-1}) = {fxi:.6f}\n"
-        proceso += f"f'(x{iteracion-1}) = {dfxi:.6f}\n\n"
-        proceso += "xi+1 = xi - f(xi)/f'(xi)\n"
+        proceso += "\nEvaluación de la función:\n"
+        fx_original_str = super_potencias(str(f_sym))
+        proceso += f"f(x) = {fx_original_str}\n"
+        expr_fx_str = str(f_sym)
+        expr_fx_str = expr_fx_str.replace(" ", "")
+        expr_fx_str = expr_fx_str.replace("x", f"({xi:.6f})")
+        expr_fx_str = super_potencias(expr_fx_str)
+        proceso += f"f({xi:.6f}) = {expr_fx_str}\n"
+        proceso += f"f({xi:.6f}) = {fxi:.6f}\n"
+        proceso += "\nEvaluación de la derivada:\n"
+        df_sym = sp.diff(f_sym)
+        df_original_str = super_potencias(str(df_sym))
+        proceso += f"f'(x) = {df_original_str}\n"
+        expr_dfx_str = str(df_sym)
+        expr_dfx_str = expr_dfx_str.replace(" ", "")
+        expr_dfx_str = expr_dfx_str.replace("x", f"({xi:.6f})")
+        expr_dfx_str = super_potencias(expr_dfx_str)
+        proceso += f"f'({xi:.6f}) = {expr_dfx_str}\n"
+        proceso += f"f'({xi:.6f}) = {dfxi:.6f}\n"
+        proceso += "\nxi+1 = xi - f(xi)/f'(xi)\n"
         proceso += f"xi+1 = {xi:.6f} - ({fxi:.6f}/{dfxi:.6f})\n"
         proceso += f"xi+1 = {xi1:.6f}\n\n"
         proceso += f"Ea = |{xi1:.6f} - {xi:.6f}| = {Ea:.6f}\n"
@@ -121,8 +138,14 @@ def newton_subintervalos(funcion: str, a: float, b: float, n: int,
     for k in range(n + 1):
         xk = a + k * h
         yk = f(xk)
+
+        f_reemplazo = str(f_sym).replace("x", f"({xk})")
+        f_reemplazo_pretty = super_potencias(f_reemplazo)
+
         proceso += f"x{k} = {a} + {k} * {h:.6f} = {xk:.2f}\n"
-        proceso += f"y{k} = f({xk:.2f}) = {yk:.6f}\n\n"
+        proceso += (
+            f"y{k} = f({xk:.2f}) = {f_reemplazo_pretty} = {yk:.6f}\n\n"
+        )
 
     xi = x0
     iteracion = 1
@@ -147,9 +170,26 @@ def newton_subintervalos(funcion: str, a: float, b: float, n: int,
         })
 
         proceso += f"\n\nIteración {iteracion} (i = {iteracion - 1})\n"
-        proceso += f"f(xi) = {fxi:.6f}\n"
-        proceso += f"f'(xi) = {dfxi:.6f}\n\n"
-        proceso += "xi+1 = xi - f(xi)/f'(xi)\n"
+        proceso += "\nEvaluación de la función:\n"
+        fx_original_str = super_potencias(str(f_sym))
+        proceso += f"f(x) = {fx_original_str}\n"
+        expr_fx_str = str(f_sym)
+        expr_fx_str = expr_fx_str.replace(" ", "")
+        expr_fx_str = expr_fx_str.replace("x", f"({xi:.6f})")
+        expr_fx_str = super_potencias(expr_fx_str)
+        proceso += f"f({xi:.6f}) = {expr_fx_str}\n"
+        proceso += f"f({xi:.6f}) = {fxi:.6f}\n"
+        proceso += "\nEvaluación de la derivada:\n"
+        df_sym = sp.diff(f_sym)
+        df_original_str = super_potencias(str(df_sym))
+        proceso += f"f'(x) = {df_original_str}\n"
+        expr_dfx_str = str(df_sym)
+        expr_dfx_str = expr_dfx_str.replace(" ", "")
+        expr_dfx_str = expr_dfx_str.replace("x", f"({xi:.6f})")
+        expr_dfx_str = super_potencias(expr_dfx_str)
+        proceso += f"f'({xi:.6f}) = {expr_dfx_str}\n"
+        proceso += f"f'({xi:.6f}) = {dfxi:.6f}\n"
+        proceso += "\nxi+1 = xi - f(xi)/f'(xi)\n"
         proceso += f"xi+1 = {xi:.6f} - ({fxi:.6f}/{dfxi:.6f})\n"
         proceso += f"xi+1 = {xi1:.6f}\n\n"
         proceso += f"Ea = |{xi1:.6f} - {xi:.6f}| = {Ea:.6f}\n"
@@ -214,9 +254,22 @@ def secante(funcion: str, xm1: float, x0: float, tol: float):
         })
 
         proceso += f"\n\nIteración {iteracion} (i = {iteracion-1})\n"
-        proceso += f"f(x_{iteracion}) = {fxi:.6f}\n"
-        proceso += f"f(x_{iteracion-1}) = {fxi_1:.6f}\n\n"
-        proceso += "xi+1 = xi - f(xi)(xi-1 - xi) / (f(xi-1) - f(xi))\n"
+        proceso += "\nEvaluación de la función:\n"
+        fx_original_str = super_potencias(str(f_sym))
+        proceso += f"f(x) = {fx_original_str}\n"
+        expr_fx_str = str(f_sym)
+        expr_fx_str = expr_fx_str.replace(" ", "")
+        expr_fx_str = expr_fx_str.replace("x", f"({xi:.6f})")
+        expr_fx_str = super_potencias(expr_fx_str)
+        proceso += f"f({xi:.6f}) = {expr_fx_str}\n"
+        proceso += f"f({xi:.6f}) = {fxi:.6f}\n"
+        expr_fx1_str = str(f_sym)
+        expr_fx1_str = expr_fx1_str.replace(" ", "")
+        expr_fx1_str = expr_fx1_str.replace("x", f"({xi_1:.6f})")
+        expr_fx1_str = super_potencias(expr_fx1_str)
+        proceso += f"f({xi_1:.6f}) = {expr_fx1_str}\n"
+        proceso += f"f({xi_1:.6f}) = {fxi_1:.6f}\n"
+        proceso += "\nxi+1 = xi - f(xi)(xi-1 - xi) / (f(xi-1) - f(xi))\n"
         proceso += (
             f"xi+1 = {xi:.6f} - ({fxi:.6f}({xi_1:.6f} - {xi:.6f}) / "
             f"({fxi_1:.6f} - {fxi:.6f}))\n"

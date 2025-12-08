@@ -171,6 +171,11 @@ class BisectionFalseView(tk.Frame):
             else:
                 tabla, iter_needed, proceso = falsa_posicion(funcion, xl, xu, error)
 
+            if tabla is None:
+                self.tabla_resultado = None
+                self._mostrar(proceso)
+                return
+
             self.tabla_resultado = tabla
 
             # TABLA
