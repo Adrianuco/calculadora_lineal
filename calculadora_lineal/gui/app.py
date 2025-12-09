@@ -215,12 +215,6 @@ class AlgebraApp(tk.Tk):
         frame = VectorMenu(self.container, self) 
         frame.pack(fill="both", expand=True)
 
-    def show_vector_operations(self):
-        for widget in self.container.winfo_children():
-            widget.destroy()
-        from .views.vectors.vector_operations import VectorOperations
-        frame = VectorOperations(self.container, self)
-        frame.pack(expand=True, fill="both")
 
     def show_vector_linear_comb(self):
         for widget in self.container.winfo_children():
